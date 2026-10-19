@@ -25,7 +25,7 @@ export function OverviewPage() {
         <StatCard label="Trials ending in 7 days" icon={Clock} loading={!d} value={d?.trials_ending_7d ?? 0} />
       </div>
       <div className="mt-6 grid gap-6 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
+        <Card className="min-w-0 xl:col-span-2">
           <CardHeader title="New businesses per month" description="Last 6 months" />
           <CardBody>
             <div className="flex h-48 items-end gap-3" role="img" aria-label="New businesses per month">
@@ -57,7 +57,7 @@ export function OverviewPage() {
         </Card>
       </div>
       <div className="mt-6 grid gap-6 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
+        <Card className="min-w-0 xl:col-span-2">
           <CardHeader title="Recent sign-ups" action={<Link to="/tenants" className="text-[13px] font-medium text-accent-700 hover:underline">All tenants</Link>} />
           <ul className="divide-y divide-gray-100">
             {d?.recent_tenants.map((t) => (

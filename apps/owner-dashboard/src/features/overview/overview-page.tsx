@@ -153,7 +153,7 @@ export function OverviewPage() {
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-3">
-        <div className="space-y-6 xl:col-span-2">
+        <div className="min-w-0 space-y-6 xl:col-span-2">
           {f && (
             <Card>
               <CardHeader title="Income and expenses" description="Last 6 months · billed by due date, collected by payment date" />

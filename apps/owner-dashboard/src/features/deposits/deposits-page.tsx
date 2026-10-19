@@ -29,7 +29,7 @@ export function DepositsPage() {
         <StatCard label="Refunded / deducted" loading={!t} value={<Money paise={(t?.refunded_paise ?? 0) + (t?.deducted_paise ?? 0)} />} footer={t ? `${formatINR(t.deducted_paise)} deducted` : null} />
       </div>
       <div className="grid gap-6 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
+        <Card className="min-w-0 xl:col-span-2">
           <div className="flex flex-col gap-3 border-b border-gray-100 p-4 sm:flex-row sm:items-center sm:justify-between">
             <Segmented label="Filter" value={filter} onChange={setFilter} options={[{ value: 'all', label: 'All' }, { value: 'held', label: 'Held' }, { value: 'due', label: 'To collect' }]} />
             <SearchInput value={search} onChange={setSearch} placeholder="Search resident" />

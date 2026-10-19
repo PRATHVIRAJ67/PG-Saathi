@@ -15,7 +15,7 @@
     "dev:owner": "npm run dev -w @pg/owner-dashboard",
     "dev:admin": "npm run dev -w @pg/super-admin",
     "dev:mobile": "npm run start -w @pg/mobile",
-    "build": "npm run build -w @pg/owner-dashboard && npm run build -w @pg/super-admin",
+    "build": "npm run build -w @pg/owner-dashboard && npm run build -w @pg/super-admin && npm run export:android -w @pg/mobile",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint .",
     "test": "vitest run",
@@ -23,7 +23,7 @@
     "test:watch": "vitest",
     "demo:snapshot": "tsx scripts/build-demo-snapshot.ts",
     "check": "npm run typecheck && npm run lint && npm run test && npm run build",
-    "test:e2e": "playwright test"
+    "test:e2e": "npm run export:web -w @pg/mobile && playwright test"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",

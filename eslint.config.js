@@ -6,9 +6,10 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/.expo/**', 'e2e/.results/**', 'apps/mobile/android/**', 'apps/mobile/ios/**', '**/*.config.js', 'apps/mobile/babel.config.js', 'apps/mobile/metro.config.js'],
+    ignores: ['**/dist/**', '**/dist-web/**', 'apps/mobile/src/demo/**', '**/node_modules/**', '**/.expo/**', 'e2e/.results/**', 'apps/mobile/android/**', 'apps/mobile/ios/**', '**/*.config.js', 'apps/mobile/babel.config.js', 'apps/mobile/metro.config.js'],
   },
   js.configs.recommended,
+  { files: ['**/*.mjs'], languageOptions: { globals: globals.node } },
   ...tseslint.configs.recommended,
   {
     files: ['**/*.{ts,tsx}'],

@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Staywise",
+    "slug": "staywise-owner",
+    "scheme": "staywise",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "backgroundColor": "#F6F7FB",
+    "android": {
+      "package": "com.staywise.owner",
+      "edgeToEdgeEnabled": true,
+      "softwareKeyboardLayoutMode": "resize",
+      "adaptiveIcon": { "backgroundColor": "#14213D" }
+    },
+    "ios": { "bundleIdentifier": "com.staywise.owner", "supportsTablet": false },
+    "plugins": [
+      "expo-router",
+      ["expo-splash-screen", { "backgroundColor": "#14213D" }],
+      "expo-font"
+    ],
+    "experiments": { "typedRoutes": false }
+  }
+}

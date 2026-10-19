@@ -61,7 +61,7 @@ export function PropertiesPage() {
             const usable = p.bed_count - p.unavailable_count;
             const rate = occupancyRate(p.occupied_count, p.bed_count, p.unavailable_count);
             return (
-              <Link key={p.id} to={`/app/properties/${p.id}`} className="group">
+              <Link key={p.id} to={`/app/properties/${p.id}`} className="group min-w-0">
                 <Card className="h-full p-5 transition-shadow group-hover:shadow-md">
                   <div className="flex items-start justify-between gap-3">
                     <span className="flex size-10 items-center justify-center rounded-lg bg-navy-900 text-white">
@@ -181,7 +181,7 @@ export function PropertyDetailPage() {
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+        <Card className="min-w-0 lg:col-span-2">
           <CardHeader
             title="Rooms"
             description={`${p.room_count} rooms`}

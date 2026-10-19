@@ -136,6 +136,21 @@ test('the sample workspace dashboard renders demo data', async ({ page }) => {
   await expect(page.locator('main h1')).toBeVisible();
   await page.waitForTimeout(800);
   await shot(page, '20-mobile-overview');
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-  expect(overflow).toBeLessThanOrEqual(1);
+  // No horizontal scrolling on any page at phone width.
+  for (const path of ['/app', '/app/properties', '/app/rooms', '/app/residents', '/app/rent', '/app/payments', '/app/deposits', '/app/expenses', '/app/reports', '/app/settings/team']) {
+    await page.goto(path);
+    await expect(page.locator('main h1')).toBeVisible();
+    await page.waitForTimeout(500);
+    const { overflow, offenders } = await page.evaluate(() => {
+      const vw = window.innerWidth;
+      const offenders: string[] = [];
+      document.querySelectorAll('main *').forEach((el) => {
+        const r = el.getBoundingClientRect();
+        const parent = el.parentElement?.getBoundingClientRect();
+        if (r.right > vw + 1 && parent && parent.right <= vw + 1) offenders.push(`${el.tagName}.${String((el as HTMLElement).className).slice(0, 80)}`);
+      });
+      return { overflow: document.documentElement.scrollWidth - vw, offenders: offenders.slice(0, 5) };
+    });
+    expect(overflow, `${path}: ${offenders.join(' | ')}`).toBeLessThanOrEqual(1);
+  }
 });

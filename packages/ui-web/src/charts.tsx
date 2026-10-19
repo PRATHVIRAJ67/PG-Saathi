@@ -32,7 +32,7 @@ function MoneyTooltip({ active, payload, label }: TooltipContentProps<number, st
 export function MonthlyMoneyChart({ data, series = ['billed_paise', 'collected_paise', 'expenses_paise'], height = 260 }: { data: MonthlyPoint[]; series?: SeriesKey[]; height?: number }) {
   const shown = SERIES.filter((s) => series.includes(s.key));
   return (
-    <div>
+    <div className="min-w-0">
       <ul className="mb-3 flex flex-wrap gap-4 text-xs text-gray-600" aria-label="Legend">
         {shown.map((s) => (
           <li key={s.key} className="flex items-center gap-1.5">
@@ -41,7 +41,7 @@ export function MonthlyMoneyChart({ data, series = ['billed_paise', 'collected_p
           </li>
         ))}
       </ul>
-      <div style={{ height }} role="img" aria-label={`Monthly ${shown.map((s) => s.label.toLowerCase()).join(', ')}`}>
+      <div className="w-full min-w-0" style={{ height }} role="img" aria-label={`Monthly ${shown.map((s) => s.label.toLowerCase()).join(', ')}`}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} barGap={2} barCategoryGap="28%" margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
             <CartesianGrid vertical={false} stroke={colors.gray[100]} />

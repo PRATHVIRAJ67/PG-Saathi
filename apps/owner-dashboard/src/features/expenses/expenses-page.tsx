@@ -57,7 +57,7 @@ export function ExpensesPage() {
         }
       />
       <div className="grid gap-6 xl:grid-cols-3">
-        <div className="space-y-6 xl:col-span-2">
+        <div className="min-w-0 space-y-6 xl:col-span-2">
           <Card>
             <div className="flex flex-col gap-3 border-b border-gray-100 p-4 sm:flex-row sm:items-center sm:justify-between">
               <Select value={category} onChange={(e) => { setCategory(e.target.value); setOffset(0); }} aria-label="Category" className="sm:w-52">

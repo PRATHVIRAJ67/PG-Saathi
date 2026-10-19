@@ -33,5 +33,11 @@ export default defineConfig({
       reuseExistingServer: true,
       timeout: 120_000,
     },
+    {
+      command: 'node scripts/serve-static.mjs apps/mobile/dist-web 5175',
+      url: 'http://localhost:5175',
+      reuseExistingServer: true,
+      timeout: 60_000,
+    },
   ],
 });
