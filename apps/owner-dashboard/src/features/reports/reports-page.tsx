@@ -3,16 +3,16 @@ import { Link } from 'react-router';
 import { BarChart3, Download, Printer } from 'lucide-react';
 import { useFinancialReport, useProperties } from '@pg/api-client/react';
 import { PAYMENT_METHOD_LABELS, addMonthsISO, formatDate, formatINR, formatMonth, occupancyRate, startOfMonthISO, todayISO } from '@pg/shared';
-import { Button } from '@/components/ui/button';
-import { Select } from '@/components/ui/form-controls';
-import { Card, CardBody, CardHeader, Progress } from '@/components/ui/surfaces';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/overlays';
-import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/table';
-import { EmptyState, ErrorState, Money, PageHeader, StatCard, TableSkeleton } from '@/components/common';
-import { MonthlyMoneyChart, ShareBars } from '@/components/charts';
+import { Button } from '@pg/ui-web/ui/button';
+import { Select } from '@pg/ui-web/ui/form-controls';
+import { Card, CardBody, CardHeader, Progress } from '@pg/ui-web/ui/surfaces';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@pg/ui-web/ui/overlays';
+import { Table, TBody, TD, TH, THead, TR } from '@pg/ui-web/ui/table';
+import { EmptyState, ErrorState, Money, PageHeader, StatCard, TableSkeleton } from '@pg/ui-web/common';
+import { MonthlyMoneyChart, ShareBars } from '@pg/ui-web/charts';
 import { MonthInput } from '@/components/pickers';
 import { useCurrentWorkspace } from '@/app/workspace';
-import { csvRupees, downloadCsv } from '@/lib/utils';
+import { csvRupees, downloadCsv } from '@pg/ui-web/utils';
 
 type Preset = 'this' | 'last3' | 'last6' | 'fy' | 'custom';
 

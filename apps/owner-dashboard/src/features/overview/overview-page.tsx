@@ -19,10 +19,10 @@ import {
 } from 'lucide-react';
 import { useDashboard, useMyContext } from '@pg/api-client/react';
 import { PAYMENT_METHOD_LABELS, formatDate, formatINR, formatMonth, formatShortDate, occupancyRate, percent, startOfMonthISO, todayISO } from '@pg/shared';
-import { Button } from '@/components/ui/button';
-import { Badge, Card, CardBody, CardHeader, Progress, Skeleton, Avatar } from '@/components/ui/surfaces';
-import { EmptyState, ErrorState, Money, PageHeader, StatCard } from '@/components/common';
-import { MonthlyMoneyChart } from '@/components/charts';
+import { Button } from '@pg/ui-web/ui/button';
+import { Badge, Card, CardBody, CardHeader, Progress, Skeleton, Avatar } from '@pg/ui-web/ui/surfaces';
+import { EmptyState, ErrorState, Money, PageHeader, StatCard } from '@pg/ui-web/common';
+import { MonthlyMoneyChart } from '@pg/ui-web/charts';
 import { MonthInput } from '@/components/pickers';
 import { useDialogs } from '@/app/stores';
 import { useCurrentWorkspace } from '@/app/workspace';

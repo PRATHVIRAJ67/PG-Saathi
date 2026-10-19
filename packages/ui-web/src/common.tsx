@@ -14,7 +14,7 @@ import {
   type TenantStatus,
 } from '@pg/shared';
 import { errorMessage } from '@pg/api-client';
-import { cn } from '@/lib/utils';
+import { cn } from './utils';
 import { Button } from './ui/button';
 import { Input } from './ui/form-controls';
 import { Badge, Card, Skeleton } from './ui/surfaces';

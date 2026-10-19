@@ -1,5 +1,5 @@
 import { Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@pg/ui-web/utils';
 
 export const PRODUCT_NAME = 'Staywise';
 

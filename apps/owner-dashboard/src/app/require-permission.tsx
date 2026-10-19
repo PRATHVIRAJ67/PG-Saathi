@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router';
 import { Lock } from 'lucide-react';
 import type { Permission } from '@pg/shared';
-import { EmptyState } from '@/components/common';
+import { EmptyState } from '@pg/ui-web/common';
 import { useCurrentWorkspace } from './workspace';
 
 /**

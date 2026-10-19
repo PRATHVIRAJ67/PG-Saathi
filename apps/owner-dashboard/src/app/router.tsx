@@ -1,8 +1,8 @@
 import { Navigate, Outlet, Route, Routes, useLocation, useSearchParams } from 'react-router';
 import { Compass, LogOut } from 'lucide-react';
 import { useMyContext } from '@pg/api-client/react';
-import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState } from '@/components/common';
+import { Button } from '@pg/ui-web/ui/button';
+import { EmptyState, ErrorState } from '@pg/ui-web/common';
 import { AppShell } from '@/layout/app-shell';
 import { Splash } from '@/layout/brand';
 import { useAuth } from './auth';

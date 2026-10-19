@@ -18,12 +18,12 @@ import {
   type TenantRole,
 } from '@pg/shared';
 import { billingSettingsSchema, blankToNull, chargeTemplateSchema, inviteMemberSchema, workspaceProfileSchema, type BillingSettingsValues, type ChargeTemplateValues, type InviteMemberValues, type WorkspaceProfileValues } from '@pg/validation';
-import { Button } from '@/components/ui/button';
-import { Checkbox, Input, MoneyInput, Select, Switch, Textarea } from '@/components/ui/form-controls';
-import { Badge, Card, CardBody, CardHeader, Progress, Skeleton, Avatar } from '@/components/ui/surfaces';
-import { Dialog, DialogContent, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/overlays';
-import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/table';
-import { ConfirmDialog, EmptyState, ErrorState, Field, FormSection, InlineError, PageHeader } from '@/components/common';
+import { Button } from '@pg/ui-web/ui/button';
+import { Checkbox, Input, MoneyInput, Select, Switch, Textarea } from '@pg/ui-web/ui/form-controls';
+import { Badge, Card, CardBody, CardHeader, Progress, Skeleton, Avatar } from '@pg/ui-web/ui/surfaces';
+import { Dialog, DialogContent, Tabs, TabsContent, TabsList, TabsTrigger } from '@pg/ui-web/ui/overlays';
+import { Table, TBody, TD, TH, THead, TR } from '@pg/ui-web/ui/table';
+import { ConfirmDialog, EmptyState, ErrorState, Field, FormSection, InlineError, PageHeader } from '@pg/ui-web/common';
 import { PropertySelect } from '@/components/pickers';
 import { useCurrentWorkspace } from '@/app/workspace';
 import { useZodForm } from '@/lib/form';

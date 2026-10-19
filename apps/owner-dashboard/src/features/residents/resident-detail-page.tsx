@@ -20,11 +20,11 @@ import {
 } from 'lucide-react';
 import { useBackend, useResident, useTenantMutation } from '@pg/api-client/react';
 import { DEPOSIT_KIND_LABELS, PAYMENT_METHOD_LABELS, formatDate, formatINR, formatMonth, type DepositTxnKind, type ResidentDetail } from '@pg/shared';
-import { Button } from '@/components/ui/button';
-import { Badge, Card, CardBody, CardHeader, Skeleton, Avatar } from '@/components/ui/surfaces';
-import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/overlays';
-import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/table';
-import { ConfirmDialog, EmptyState, ErrorState, InvoiceStatusBadge, KeyValue, Money, PageHeader, PaymentStatusBadge, ResidentStatusBadge, StatCard } from '@/components/common';
+import { Button } from '@pg/ui-web/ui/button';
+import { Badge, Card, CardBody, CardHeader, Skeleton, Avatar } from '@pg/ui-web/ui/surfaces';
+import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, Tabs, TabsContent, TabsList, TabsTrigger } from '@pg/ui-web/ui/overlays';
+import { Table, TBody, TD, TH, THead, TR } from '@pg/ui-web/ui/table';
+import { ConfirmDialog, EmptyState, ErrorState, InvoiceStatusBadge, KeyValue, Money, PageHeader, PaymentStatusBadge, ResidentStatusBadge, StatCard } from '@pg/ui-web/common';
 import { useDialogs } from '@/app/stores';
 import { useCurrentWorkspace } from '@/app/workspace';
 import { AssignBedDialog, ChangeRentDialog, InviteResidentDialog, MoveOutDialog, ResidentFormDialog } from './resident-dialogs';

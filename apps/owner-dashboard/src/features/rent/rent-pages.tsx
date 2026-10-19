@@ -5,12 +5,12 @@ import { ArrowLeft, Ban, CalendarCheck, CreditCard, FilePlus, FileText, Printer 
 import { useBackend, useInvoice, useInvoices, useTenantMutation } from '@pg/api-client/react';
 import type { InvoiceListParams } from '@pg/api-client';
 import { INVOICE_ITEM_KIND_LABELS, PAYMENT_METHOD_LABELS, formatDate, formatINR, formatMonth, startOfMonthISO, todayISO } from '@pg/shared';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/form-controls';
-import { Badge, Card, Skeleton } from '@/components/ui/surfaces';
-import { Segmented } from '@/components/ui/overlays';
-import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/table';
-import { ConfirmDialog, EmptyState, ErrorState, Field, InvoiceStatusBadge, Money, PageHeader, Pagination, SearchInput, StatCard, TableSkeleton } from '@/components/common';
+import { Button } from '@pg/ui-web/ui/button';
+import { Textarea } from '@pg/ui-web/ui/form-controls';
+import { Badge, Card, Skeleton } from '@pg/ui-web/ui/surfaces';
+import { Segmented } from '@pg/ui-web/ui/overlays';
+import { Table, TBody, TD, TH, THead, TR } from '@pg/ui-web/ui/table';
+import { ConfirmDialog, EmptyState, ErrorState, Field, InvoiceStatusBadge, Money, PageHeader, Pagination, SearchInput, StatCard, TableSkeleton } from '@pg/ui-web/common';
 import { MonthInput } from '@/components/pickers';
 import { useDialogs } from '@/app/stores';
 import { useCurrentWorkspace } from '@/app/workspace';

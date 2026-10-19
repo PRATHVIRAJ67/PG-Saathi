@@ -16,10 +16,10 @@ import {
   type PaymentMethod,
 } from '@pg/shared';
 import { paymentSchema } from '@pg/validation';
-import { Button } from '@/components/ui/button';
-import { Checkbox, Input, MoneyInput, Select, Textarea } from '@/components/ui/form-controls';
-import { Dialog, DialogContent, Segmented } from '@/components/ui/overlays';
-import { Field, InlineError, InvoiceStatusBadge } from '@/components/common';
+import { Button } from '@pg/ui-web/ui/button';
+import { Checkbox, Input, MoneyInput, Select, Textarea } from '@pg/ui-web/ui/form-controls';
+import { Dialog, DialogContent, Segmented } from '@pg/ui-web/ui/overlays';
+import { Field, InlineError, InvoiceStatusBadge } from '@pg/ui-web/common';
 import { ResidentPicker } from '@/components/pickers';
 import { useCurrentWorkspace } from '@/app/workspace';
 import { useZodForm } from '@/lib/form';

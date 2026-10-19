@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Dialog as DialogPrimitive, DropdownMenu as MenuPrimitive, Tabs as TabsPrimitive, Tooltip as TooltipPrimitive, Popover as PopoverPrimitive } from 'radix-ui';
 import { X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '../utils';
 
 // ---------------------------------------------------------------------------
 // Dialog

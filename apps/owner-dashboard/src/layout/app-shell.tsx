@@ -27,11 +27,11 @@ import {
 } from 'lucide-react';
 import { ROLE_LABELS, formatINR, relativeDays, type Permission } from '@pg/shared';
 import { useBackend, useDashboard, useProperties } from '@pg/api-client/react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Select } from '@/components/ui/form-controls';
-import { Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator, MenuTrigger, Popover, PopoverContent, PopoverTrigger, Tooltip } from '@/components/ui/overlays';
-import { Avatar } from '@/components/ui/surfaces';
+import { cn } from '@pg/ui-web/utils';
+import { Button } from '@pg/ui-web/ui/button';
+import { Select } from '@pg/ui-web/ui/form-controls';
+import { Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator, MenuTrigger, Popover, PopoverContent, PopoverTrigger, Tooltip } from '@pg/ui-web/ui/overlays';
+import { Avatar } from '@pg/ui-web/ui/surfaces';
 import { GlobalDialogs } from '@/features/global-dialogs';
 import { useAuth } from '@/app/auth';
 import { useDialogs, useSessionStore } from '@/app/stores';

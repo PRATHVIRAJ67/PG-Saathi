@@ -4,10 +4,10 @@ import { newIdempotencyKey } from '@pg/api-client';
 import { useBackend, useTenantMutation } from '@pg/api-client/react';
 import { DEPOSIT_KIND_LABELS, PAYMENT_METHODS, PAYMENT_METHOD_LABELS, formatINR, paiseToRupeesInput, rupeesToPaise, todayISO, type DepositTxnKind, type PaymentMethod } from '@pg/shared';
 import { blankToNull, depositSchema, type DepositValues } from '@pg/validation';
-import { Button } from '@/components/ui/button';
-import { Input, MoneyInput, Select, Textarea } from '@/components/ui/form-controls';
-import { Dialog, DialogContent, Segmented } from '@/components/ui/overlays';
-import { Field, InlineError } from '@/components/common';
+import { Button } from '@pg/ui-web/ui/button';
+import { Input, MoneyInput, Select, Textarea } from '@pg/ui-web/ui/form-controls';
+import { Dialog, DialogContent, Segmented } from '@pg/ui-web/ui/overlays';
+import { Field, InlineError } from '@pg/ui-web/common';
 import { useCurrentWorkspace } from '@/app/workspace';
 import { useZodForm } from '@/lib/form';
 

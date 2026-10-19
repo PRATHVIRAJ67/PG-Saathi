@@ -18,14 +18,14 @@ import {
   type RentMode,
 } from '@pg/shared';
 import { businessSchema, propertySchema } from '@pg/validation';
-import { Button } from '@/components/ui/button';
-import { Checkbox, Input, MoneyInput, Select, Switch, Textarea } from '@/components/ui/form-controls';
-import { Badge, Card } from '@/components/ui/surfaces';
-import { Field, InlineError } from '@/components/common';
+import { Button } from '@pg/ui-web/ui/button';
+import { Checkbox, Input, MoneyInput, Select, Switch, Textarea } from '@pg/ui-web/ui/form-controls';
+import { Badge, Card } from '@pg/ui-web/ui/surfaces';
+import { Field, InlineError } from '@pg/ui-web/common';
 import { BedPicker } from '@/components/pickers';
 import { Logo, Splash } from '@/layout/brand';
 import { useZodForm } from '@/lib/form';
-import { cn } from '@/lib/utils';
+import { cn } from '@pg/ui-web/utils';
 import { useAuth } from '@/app/auth';
 import { DemoBanner } from '@/layout/app-shell';
 import { useSessionStore } from '@/app/stores';

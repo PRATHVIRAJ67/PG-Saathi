@@ -2,10 +2,10 @@ import { useMemo, useState } from 'react';
 import { Check, ChevronDown, Search } from 'lucide-react';
 import { formatINR, formatMonth, startOfMonthISO, todayISO, type ISODate, type Room } from '@pg/shared';
 import { useProperties, useResident, useResidents, useRooms } from '@pg/api-client/react';
-import { cn } from '@/lib/utils';
-import { Input, Select } from './ui/form-controls';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/overlays';
-import { Avatar } from './ui/surfaces';
+import { cn } from '@pg/ui-web/utils';
+import { Input, Select } from '@pg/ui-web/ui/form-controls';
+import { Popover, PopoverContent, PopoverTrigger } from '@pg/ui-web/ui/overlays';
+import { Avatar } from '@pg/ui-web/ui/surfaces';
 
 /** Searchable resident picker backed by the server-side resident search. */
 export function ResidentPicker({

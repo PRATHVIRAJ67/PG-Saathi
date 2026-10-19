@@ -1,7 +1,7 @@
 import { forwardRef, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
 import { Checkbox as CheckboxPrimitive, Switch as SwitchPrimitive, Label as LabelPrimitive } from 'radix-ui';
 import { Check, ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '../utils';
 
 const fieldBase =
   'w-full rounded-md border border-gray-200 bg-white text-sm text-gray-900 shadow-xs transition-[border-color,box-shadow] placeholder:text-gray-400 hover:border-gray-300 focus-visible:border-accent-600 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent-100 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500 aria-[invalid=true]:border-danger-600 aria-[invalid=true]:focus-visible:ring-danger-100';

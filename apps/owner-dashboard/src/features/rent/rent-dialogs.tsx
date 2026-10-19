@@ -4,10 +4,10 @@ import { toast } from 'sonner';
 import { CalendarCheck, Plus, Trash2 } from 'lucide-react';
 import { useBackend, useChargeTemplates, useDashboard, useTenantMutation, useWorkspace } from '@pg/api-client/react';
 import { INVOICE_ITEM_KIND_LABELS, addDaysISO, formatINR, formatMonth, paiseToRupeesInput, rupeesToPaise, startOfMonthISO, todayISO, type InvoiceItemKind } from '@pg/shared';
-import { Button } from '@/components/ui/button';
-import { Input, MoneyInput, Select, Textarea } from '@/components/ui/form-controls';
-import { Dialog, DialogContent } from '@/components/ui/overlays';
-import { Field, InlineError } from '@/components/common';
+import { Button } from '@pg/ui-web/ui/button';
+import { Input, MoneyInput, Select, Textarea } from '@pg/ui-web/ui/form-controls';
+import { Dialog, DialogContent } from '@pg/ui-web/ui/overlays';
+import { Field, InlineError } from '@pg/ui-web/common';
 import { MonthInput, PropertySelect, ResidentPicker } from '@/components/pickers';
 import { useCurrentWorkspace } from '@/app/workspace';
 

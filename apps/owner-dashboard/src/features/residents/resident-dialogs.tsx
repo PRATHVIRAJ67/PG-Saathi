@@ -15,10 +15,10 @@ import {
   type Stay,
 } from '@pg/shared';
 import { assignBedSchema, blankToNull, changeRentSchema, moveOutSchema, residentSchema, toPaise } from '@pg/validation';
-import { Button } from '@/components/ui/button';
-import { Input, MoneyInput, Select, Textarea } from '@/components/ui/form-controls';
-import { Dialog, DialogContent } from '@/components/ui/overlays';
-import { Field, InlineError } from '@/components/common';
+import { Button } from '@pg/ui-web/ui/button';
+import { Input, MoneyInput, Select, Textarea } from '@pg/ui-web/ui/form-controls';
+import { Dialog, DialogContent } from '@pg/ui-web/ui/overlays';
+import { Field, InlineError } from '@pg/ui-web/common';
 import { BedPicker, ResidentPicker } from '@/components/pickers';
 import { useCurrentWorkspace } from '@/app/workspace';
 import { useZodForm } from '@/lib/form';

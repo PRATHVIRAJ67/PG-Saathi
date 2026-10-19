@@ -12,8 +12,8 @@ import { bootBackend, type BootResult } from './app/backend';
 import { AuthProvider } from './app/auth';
 import { AppRoutes } from './app/router';
 import { Splash } from './layout/brand';
-import { TooltipProvider } from './components/ui/overlays';
-import { EmptyState } from './components/common';
+import { TooltipProvider } from '@pg/ui-web/ui/overlays';
+import { EmptyState } from '@pg/ui-web/common';
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -3,11 +3,11 @@ import { Link } from 'react-router';
 import { Wallet } from 'lucide-react';
 import { useDeposits } from '@pg/api-client/react';
 import { DEPOSIT_KIND_LABELS, formatDate, formatINR, type DepositRow, type DepositTxnKind } from '@pg/shared';
-import { Button } from '@/components/ui/button';
-import { Badge, Card, CardHeader } from '@/components/ui/surfaces';
-import { Segmented } from '@/components/ui/overlays';
-import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/table';
-import { EmptyState, ErrorState, Money, PageHeader, SearchInput, StatCard, TableSkeleton } from '@/components/common';
+import { Button } from '@pg/ui-web/ui/button';
+import { Badge, Card, CardHeader } from '@pg/ui-web/ui/surfaces';
+import { Segmented } from '@pg/ui-web/ui/overlays';
+import { Table, TBody, TD, TH, THead, TR } from '@pg/ui-web/ui/table';
+import { EmptyState, ErrorState, Money, PageHeader, SearchInput, StatCard, TableSkeleton } from '@pg/ui-web/common';
 import { useCurrentWorkspace } from '@/app/workspace';
 import { DepositDialog } from './deposit-dialog';
 

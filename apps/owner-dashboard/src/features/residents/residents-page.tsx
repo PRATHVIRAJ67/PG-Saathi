@@ -4,12 +4,12 @@ import { Plus, Users } from 'lucide-react';
 import { useResidents } from '@pg/api-client/react';
 import { formatDate } from '@pg/shared';
 import type { ResidentListParams } from '@pg/api-client';
-import { Button } from '@/components/ui/button';
-import { Select } from '@/components/ui/form-controls';
-import { Card, Avatar } from '@/components/ui/surfaces';
-import { Segmented } from '@/components/ui/overlays';
-import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/table';
-import { EmptyState, ErrorState, Money, PageHeader, Pagination, ResidentStatusBadge, SearchInput, TableSkeleton } from '@/components/common';
+import { Button } from '@pg/ui-web/ui/button';
+import { Select } from '@pg/ui-web/ui/form-controls';
+import { Card, Avatar } from '@pg/ui-web/ui/surfaces';
+import { Segmented } from '@pg/ui-web/ui/overlays';
+import { Table, TBody, TD, TH, THead, TR } from '@pg/ui-web/ui/table';
+import { EmptyState, ErrorState, Money, PageHeader, Pagination, ResidentStatusBadge, SearchInput, TableSkeleton } from '@pg/ui-web/common';
 import { useDialogs } from '@/app/stores';
 import { useCurrentWorkspace } from '@/app/workspace';
 

@@ -20,10 +20,18 @@ export default defineConfig({
     viewport: { width: 1440, height: 900 },
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } }],
-  webServer: {
-    command: 'npm run dev -w @pg/owner-dashboard -- --port 5173 --strictPort',
-    url: 'http://localhost:5173',
-    reuseExistingServer: true,
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      command: 'npm run dev -w @pg/owner-dashboard -- --port 5173 --strictPort',
+      url: 'http://localhost:5173',
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+    {
+      command: 'npm run dev -w @pg/super-admin -- --port 5174 --strictPort',
+      url: 'http://localhost:5174',
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+  ],
 });
