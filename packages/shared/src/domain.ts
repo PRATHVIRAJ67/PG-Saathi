@@ -209,8 +209,8 @@ export function proratedRent(monthlyRentPaise: Paise, moveIn: ISODate, monthStar
   const moveInDate = new Date(`${moveIn}T00:00:00Z`);
   if (moveInDate <= start) return monthlyRentPaise;
   const daysStayed = Math.round((end.getTime() - moveInDate.getTime()) / 86_400_000) + 1;
-  // Postgres round() on numeric rounds half away from zero.
-  return Math.round((monthlyRentPaise * daysStayed) / daysInMonth);
+  // Rounded to whole rupees like the database (round() on numeric, half away from zero).
+  return Math.round((monthlyRentPaise * daysStayed) / daysInMonth / 100) * 100;
 }
 
 export function occupancyRate(occupied: number, totalBeds: number, unavailable = 0): number {

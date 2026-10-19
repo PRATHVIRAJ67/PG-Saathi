@@ -14,3 +14,6 @@ coverage/
 npm-debug.log*
 .vite/
 web-build/
+e2e/.results/
+e2e/screenshots/
+playwright-report/

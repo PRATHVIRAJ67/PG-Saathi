@@ -159,7 +159,7 @@ begin
                    left join public.stays s on s.bed_id = b.id and s.status = 'active'
                    left join public.residents res on res.id = s.resident_id
                   where b.room_id = r.id)
-             ) order by p.name, r.floor nulls first, char_length(r.name), r.name)
+             ) order by p.name, char_length(r.name), r.name)
       from public.rooms r
       join public.properties p on p.id = r.property_id
      where r.tenant_id = p_tenant_id

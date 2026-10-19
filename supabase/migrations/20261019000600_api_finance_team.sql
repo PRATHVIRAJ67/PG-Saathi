@@ -283,7 +283,8 @@ begin
     v_rent := v_agreement.monthly_rent_paise;
     v_desc := 'Rent for ' || to_char(v_start, 'FMMonth YYYY');
     if v_settings.prorate_first_month and v_stay.move_in_date > v_start then
-      v_rent := round(v_rent::numeric * (v_end - v_stay.move_in_date + 1) / v_days)::bigint;
+      -- Rounded to whole rupees, as PG bills normally are.
+      v_rent := (round(v_rent::numeric * (v_end - v_stay.move_in_date + 1) / v_days / 100) * 100)::bigint;
       v_desc := v_desc || ' (prorated from ' || to_char(v_stay.move_in_date, 'FMDD Mon') || ')';
     end if;
 

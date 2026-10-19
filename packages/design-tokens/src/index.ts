@@ -72,8 +72,9 @@ export const shadow = {
 
 /** Chart palette (categorical) — readable on white, distinguishable for common colour-vision deficiencies. */
 export const chart = {
-  billed: colors.navy[700],
-  collected: colors.accent[600],
+  // Validated with the dataviz palette checker (CVD + normal-vision separation).
+  billed: colors.accent[600],
+  collected: colors.success[600],
   expenses: colors.warning[600],
   occupied: colors.accent[600],
   vacant: colors.gray[300],

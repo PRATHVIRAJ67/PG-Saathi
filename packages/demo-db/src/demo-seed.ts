@@ -23,7 +23,34 @@ export const DEMO_ACCOUNT = {
   fullName: 'Demo Owner',
 } as const;
 
+/** Demo-only platform operator account for the super-admin app. */
+export const DEMO_ADMIN_ACCOUNT = {
+  email: 'admin@demo.pgsaas.local',
+  password: 'demo-admin-2026',
+  fullName: 'Demo Platform Admin',
+} as const;
+
 const SEED_MARKER = 'demo-seed:v1';
+const ADMIN_MARKER = 'demo-admin:v1';
+
+/** Creates the demo platform admin (super-admin app demo mode only). Idempotent. */
+export async function seedDemoPlatformAdmin(db: PGlite, auth: DemoAuth): Promise<void> {
+  const done = await db.query('select 1 from demo_meta.applied where name = $1', [ADMIN_MARKER]);
+  if (done.rows.length) return;
+  const userId = await auth.createUser({ ...DEMO_ADMIN_ACCOUNT, confirmed: true });
+  // Operators are granted with SQL, never through the app — same as production.
+  await db.query('insert into public.platform_admins (user_id, note) values ($1, $2)', [userId, 'Demo operator']);
+  // A second, freshly onboarded demo business so the tenant list has variety.
+  const ownerId = await auth.createUser({ email: 'owner2@demo.pgsaas.local', password: 'demo-owner-2026', fullName: 'Second Demo Owner', confirmed: true });
+  const api = createDataService(createPgliteTransport(db, () => ownerId));
+  const tenantId = await api.provisionWorkspace({ requestId: newIdempotencyKey(), businessName: 'Lakeview Hostel (demo)', city: 'Pune', state: 'Maharashtra' });
+  const propertyId = await api.createProperty(tenantId, { name: 'Lakeview Hostel — Baner (demo)', property_type: 'hostel', city: 'Pune' });
+  await api.createRooms(propertyId, [
+    { name: 'G1', rent_paise: 6_500_00, bed_count: 4 },
+    { name: 'G2', rent_paise: 6_500_00, bed_count: 4 },
+  ]);
+  await db.query('insert into demo_meta.applied (name) values ($1)', [ADMIN_MARKER]);
+}
 
 type Behaviour = 'prompt' | 'late' | 'partial' | 'overdue' | 'advance';
 
@@ -297,11 +324,11 @@ export async function seedDemoWorkspace(db: PGlite, auth: DemoAuth): Promise<{ u
 
   // Monthly running costs.
   const expenseTemplate = [
-    { category: 'Electricity', amounts: [18_420_00, 9_870_00] },
-    { category: 'Groceries', amounts: [41_250_00, 22_600_00] },
-    { category: 'Salaries', amounts: [32_000_00, 18_000_00] },
-    { category: 'Internet', amounts: [2_360_00, 1_770_00] },
-    { category: 'Water', amounts: [3_100_00, 1_650_00] },
+    { category: 'Electricity', amounts: [9_420_00, 5_870_00] },
+    { category: 'Groceries', amounts: [21_250_00, 12_600_00] },
+    { category: 'Salaries', amounts: [16_000_00, 9_000_00] },
+    { category: 'Internet', amounts: [1_180_00, 885_00] },
+    { category: 'Water', amounts: [1_550_00, 825_00] },
   ];
   for (let m = 3; m >= 0; m--) {
     for (const [pIndex, propertyId] of propertyIds.entries()) {

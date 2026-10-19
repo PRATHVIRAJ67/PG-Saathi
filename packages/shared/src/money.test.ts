@@ -69,7 +69,7 @@ describe('domain rules', () => {
 
   it('prorates rent by days stayed', () => {
     expect(proratedRent(900_000, '2026-10-01', '2026-10-01')).toBe(900_000);
-    expect(proratedRent(900_000, '2026-10-16', '2026-10-01')).toBe(Math.round((900_000 * 16) / 31));
+    expect(proratedRent(900_000, '2026-10-16', '2026-10-01')).toBe(Math.round((900_000 * 16) / 31 / 100) * 100);
   });
 
   it('computes occupancy over usable beds', () => {

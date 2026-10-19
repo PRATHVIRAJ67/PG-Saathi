@@ -234,7 +234,7 @@ describe('rent and payment accounting', () => {
     await o.api.generateRentInvoices(o.tenantId, month);
     const detail = await o.api.getResident(id);
     const daysInMonth = new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0).getDate();
-    const expected = Math.round((9_000_00 * (daysInMonth - 15)) / daysInMonth);
+    const expected = Math.round((9_000_00 * (daysInMonth - 15)) / daysInMonth / 100) * 100;
     expect(detail.invoices[0]!.total_paise).toBe(expected);
   });
 });
