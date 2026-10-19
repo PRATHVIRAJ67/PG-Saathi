@@ -132,20 +132,14 @@ export function SignInPage() {
         <Field label="Email" htmlFor="email" error={formState.errors.email?.message}>
           <Input id="email" type="email" autoComplete="email" autoFocus aria-invalid={!!formState.errors.email} {...register('email')} />
         </Field>
-        <Field
-          label={
-            <span className="flex items-center justify-between">
-              Password
-              <Link to="/forgot-password" className="text-xs font-normal text-accent-700 hover:underline">
-                Forgot password?
-              </Link>
-            </span>
-          }
-          htmlFor="password"
-          error={formState.errors.password?.message}
-        >
+        <Field label="Password" htmlFor="password" error={formState.errors.password?.message}>
           <Input id="password" type="password" autoComplete="current-password" aria-invalid={!!formState.errors.password} {...register('password')} />
         </Field>
+        <div className="-mt-2 text-right">
+          <Link to="/forgot-password" className="text-xs text-accent-700 hover:underline">
+            Forgot password?
+          </Link>
+        </div>
         <InlineError error={error} />
         <Button type="submit" className="w-full" size="lg" loading={formState.isSubmitting}>
           Sign in
