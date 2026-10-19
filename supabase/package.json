@@ -1,0 +1,13 @@
+{
+  "name": "@pg/supabase",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Database migrations, seed and database-level tests (run against PGlite).",
+  "scripts": { "typecheck": "tsc -p tsconfig.json" },
+  "dependencies": {
+    "@pg/api-client": "0.1.0",
+    "@pg/demo-db": "0.1.0",
+    "@pg/shared": "0.1.0"
+  }
+}
