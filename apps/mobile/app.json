@@ -10,7 +10,6 @@
     "backgroundColor": "#F6F7FB",
     "android": {
       "package": "com.staywise.owner",
-      "edgeToEdgeEnabled": true,
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": { "backgroundColor": "#14213D" }
     },
