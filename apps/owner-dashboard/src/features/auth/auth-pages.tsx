@@ -9,7 +9,7 @@ import { passwordField, signInSchema, signUpSchema } from '@pg/validation';
 import { Button } from '@pg/ui-web/ui/button';
 import { Input } from '@pg/ui-web/ui/form-controls';
 import { Field, InlineError } from '@pg/ui-web/common';
-import { Logo, PRODUCT_NAME } from '@/layout/brand';
+import { Logo, LogoMark, PRODUCT_NAME } from '@/layout/brand';
 import { useZodForm } from '@/lib/form';
 import { useAuth } from '@/app/auth';
 
@@ -22,12 +22,7 @@ function AuthLayout({ title, subtitle, children, footer }: { title: string; subt
       <aside className="relative hidden overflow-hidden bg-navy-900 p-12 text-white lg:flex lg:flex-col">
         <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} aria-hidden />
         <div className="relative flex items-center gap-2.5">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-white/10 ring-1 ring-white/15">
-            <svg viewBox="0 0 32 32" className="size-6" aria-hidden>
-              <path d="M9 21V13.5L16 9l7 4.5V21" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinejoin="round" />
-              <rect x="13" y="16" width="6" height="5" rx="1" fill="#8C8DF0" />
-            </svg>
-          </span>
+          <LogoMark className="size-9 rounded-[10px] ring-1 ring-white/15" />
           <span className="text-[15px] font-semibold tracking-tight">{PRODUCT_NAME}</span>
         </div>
         <div className="relative mt-auto max-w-md">

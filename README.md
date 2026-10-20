@@ -1,4 +1,4 @@
-# Staywise: multi-tenant PG management SaaS
+# PG Sathi: multi-tenant PG management SaaS
 
 One application, many independent PG businesses. Owners sign up, create
 their own workspace, configure properties, rooms and beds, add residents, bill

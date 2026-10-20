@@ -1,24 +1,41 @@
 {
   "expo": {
-    "name": "Staywise",
-    "slug": "staywise-owner",
-    "scheme": "staywise",
+    "name": "PG Sathi",
+    "slug": "pg-sathi",
+    "scheme": "pgsathi",
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "backgroundColor": "#F6F7FB",
     "android": {
-      "package": "com.staywise.owner",
+      "package": "com.pgsathi.app",
       "softwareKeyboardLayoutMode": "resize",
-      "adaptiveIcon": { "backgroundColor": "#14213D" }
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#14213D"
+      }
     },
-    "ios": { "bundleIdentifier": "com.staywise.owner", "supportsTablet": false },
+    "ios": {
+      "bundleIdentifier": "com.pgsathi.app",
+      "supportsTablet": false
+    },
     "plugins": [
       "expo-router",
-      ["expo-splash-screen", { "backgroundColor": "#14213D" }],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#14213D"
+        }
+      ],
       "expo-font"
     ],
-    "experiments": { "typedRoutes": false }
+    "experiments": {
+      "typedRoutes": false
+    },
+    "icon": "./assets/icon.png"
   }
 }
