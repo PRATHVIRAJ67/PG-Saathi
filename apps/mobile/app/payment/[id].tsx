@@ -4,12 +4,12 @@ import { ArrowLeft } from 'lucide-react-native';
 import { colors } from '@pg/design-tokens';
 import { usePayment } from '@pg/api-client/react';
 import { PAYMENT_METHOD_LABELS, formatDate, formatDateTime, formatINR, formatMonth } from '@pg/shared';
-import { useWorkspaceContext } from '../../src/session';
+import { useResidentContext } from '../../src/session';
 import { Badge, Card, Divider, ErrorView, IconButton, LoadingList, Screen, Txt } from '../../src/ui';
 
 export default function PaymentDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { tenantId } = useWorkspaceContext();
+  const { tenantId } = useResidentContext();
   const q = usePayment(tenantId, id);
   const p = q.data;
   const line = (label: string, value: string | null | undefined) => (

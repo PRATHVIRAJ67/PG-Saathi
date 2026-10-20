@@ -5,27 +5,24 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { AuthSession } from '@pg/api-client';
 import { queryKeys, useBackend, useMyContext } from '@pg/api-client/react';
-import { can, type Permission, type WorkspaceSummary } from '@pg/shared';
+import type { ResidentLink } from '@pg/shared';
 
 interface Prefs {
-  activeTenantId: string | null;
-  propertyByTenant: Record<string, string | null>;
-  setActiveTenant: (id: string | null) => void;
-  setProperty: (tenantId: string, propertyId: string | null) => void;
+  /** Which PG to show when a resident has stayed in more than one. */
+  activeResidentId: string | null;
+  setActiveResident: (id: string | null) => void;
   reset: () => void;
 }
 
-/** Device preferences only; access is always re-validated against memberships. */
+/** Device preference only; access is re-validated against the user's links on every load. */
 export const usePrefs = create<Prefs>()(
   persist(
     (set) => ({
-      activeTenantId: null,
-      propertyByTenant: {},
-      setActiveTenant: (id) => set({ activeTenantId: id }),
-      setProperty: (tenantId, propertyId) => set((s) => ({ propertyByTenant: { ...s.propertyByTenant, [tenantId]: propertyId } })),
-      reset: () => set({ activeTenantId: null, propertyByTenant: {} }),
+      activeResidentId: null,
+      setActiveResident: (id) => set({ activeResidentId: id }),
+      reset: () => set({ activeResidentId: null }),
     }),
-    { name: 'pg-saas-prefs', storage: createJSONStorage(() => AsyncStorage) },
+    { name: 'pg-sathi-resident-prefs', storage: createJSONStorage(() => AsyncStorage) },
   ),
 );
 
@@ -71,28 +68,23 @@ export function useAuth() {
   return ctx;
 }
 
-/** Active workspace, chosen from the user's verified memberships. */
-export function useWorkspaceContext() {
+/** The resident record (and PG) this signed-in user is linked to. */
+export function useResidentContext() {
   const me = useMyContext();
   const queryClient = useQueryClient();
-  const preferred = usePrefs((s) => s.activeTenantId);
-  const setActive = usePrefs((s) => s.setActiveTenant);
-  const propertyByTenant = usePrefs((s) => s.propertyByTenant);
-  const setProperty = usePrefs((s) => s.setProperty);
-  const workspaces = me.data?.workspaces ?? [];
-  const workspace: WorkspaceSummary | undefined = workspaces.find((w) => w.tenant_id === preferred) ?? workspaces[0];
-  const tenantId = workspace?.tenant_id ?? null;
+  const preferred = usePrefs((s) => s.activeResidentId);
+  const setActive = usePrefs((s) => s.setActiveResident);
+  const links: ResidentLink[] = me.data?.resident_links ?? [];
+  const link = links.find((l) => l.resident_id === preferred) ?? links[0];
   return {
     me,
-    workspace,
-    tenantId,
-    role: workspace?.role ?? null,
-    can: (p: Permission) => can(workspace?.role, p),
-    propertyId: tenantId ? (propertyByTenant[tenantId] ?? null) : null,
-    setPropertyId: (id: string | null) => tenantId && setProperty(tenantId, id),
-    switchTenant: (id: string) => {
-      if (tenantId) queryClient.removeQueries({ queryKey: queryKeys.tenant(tenantId) });
-      setActive(id);
+    links,
+    link,
+    tenantId: link?.tenant_id ?? null,
+    residentId: link?.resident_id ?? null,
+    switchTo: (residentId: string) => {
+      if (link) queryClient.removeQueries({ queryKey: queryKeys.tenant(link.tenant_id) });
+      setActive(residentId);
     },
   };
 }

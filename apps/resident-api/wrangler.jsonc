@@ -1,0 +1,13 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "pg-sathi-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "vars": {
+    // Public values. The secret key is NOT here: set it with
+    //   npx wrangler secret put SUPABASE_SECRET_KEY
+    "SUPABASE_URL": "https://qdnnzbytjhtxzdamndyl.supabase.co",
+    "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_SY3tyGEBfEkK_7onsqIUVg_cw4FwhXo",
+    "ALLOWED_ORIGINS": "https://pg-sathi-admin.prathviholla67.workers.dev,http://localhost:5173"
+  }
+}

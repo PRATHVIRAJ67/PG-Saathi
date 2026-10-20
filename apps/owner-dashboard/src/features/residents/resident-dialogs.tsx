@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
-import { Copy, Info } from 'lucide-react';
+import { CheckCircle2, Copy, Info, RefreshCw, Send } from 'lucide-react';
+import { AppError, generateResidentPassword } from '@pg/api-client';
 import { useBackend, useTenantMutation, useWorkspace } from '@pg/api-client/react';
 import {
   PAYMENT_METHOD_LABELS,
@@ -484,31 +485,74 @@ export function ChangeRentDialog({ open, onOpenChange, stay }: { open: boolean; 
 }
 
 // ---------------------------------------------------------------------------
-// Invite a resident to the app
+// Resident app login (create / reset password / remove)
 // ---------------------------------------------------------------------------
-export function InviteResidentDialog({ open, onOpenChange, resident }: { open: boolean; onOpenChange: (o: boolean) => void; resident: ResidentDetail }) {
+export type AppLoginMode = 'create' | 'reset' | 'revoke';
+
+export function ResidentAppLoginDialog({
+  open,
+  onOpenChange,
+  resident,
+  mode,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  resident: ResidentDetail;
+  mode: AppLoginMode;
+}) {
   const { tenantId } = useCurrentWorkspace();
-  const { data } = useBackend();
+  const { residentAccess } = useBackend();
   const [email, setEmail] = useState(resident.email ?? '');
-  const [link, setLink] = useState<string | null>(null);
-  const mutation = useTenantMutation(tenantId, () => data.inviteResident(resident.id, email.trim() || null));
+  const [password, setPassword] = useState(generateResidentPassword);
+  const [done, setDone] = useState<{ email: string; password: string } | null>(null);
+  const loginEmail = resident.email ?? email;
+
+  const mutation = useTenantMutation(tenantId, async () => {
+    if (!residentAccess) throw new AppError('not_supported', 'Resident app logins are not available in this app.');
+    if (mode === 'revoke') return residentAccess.revoke(resident.id);
+    if (password.trim().length < 8) throw new AppError('validation', 'Password must be at least 8 characters.');
+    if (mode === 'reset') {
+      await residentAccess.resetPassword(resident.id, password.trim());
+      setDone({ email: loginEmail, password: password.trim() });
+      return;
+    }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) throw new AppError('validation', 'Enter a valid email address.');
+    const res = await residentAccess.create(resident.id, email.trim(), password.trim());
+    setDone({ email: res.email, password: password.trim() });
+  });
+
   useEffect(() => {
     if (open) {
-      setLink(null);
+      setDone(null);
       setEmail(resident.email ?? '');
+      setPassword(generateResidentPassword());
       mutation.reset();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  const shareText = done
+    ? `Hi ${resident.full_name.split(' ')[0]}, your PG Sathi app login:\nEmail: ${done.email}\nPassword: ${done.password}\nInstall the PG Sathi app and sign in to see your room, rent and receipts.`
+    : '';
+  const phone = (resident.phone ?? '').replace(/\D/g, '');
+  const waNumber = phone.length === 10 ? `91${phone}` : phone;
+
+  const title = mode === 'create' ? 'Give app login' : mode === 'reset' ? 'Reset app password' : 'Remove app access';
+  const description =
+    mode === 'create'
+      ? `${resident.full_name} can then sign in to the PG Sathi app to see their room, rent due, bills and receipts. No sign-up needed.`
+      : mode === 'reset'
+        ? `Sets a new password for ${loginEmail}. The old password stops working.`
+        : `${resident.full_name} will no longer see this PG in the app. Their records here are not affected.`;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         size="sm"
-        title="Invite to the resident app"
-        description="Optional. The resident can then see their own bills and receipts. They must sign up with this email address."
+        title={title}
+        description={done ? undefined : description}
         footer={
-          link ? (
+          done ? (
             <Button onClick={() => onOpenChange(false)}>Done</Button>
           ) : (
             <>
@@ -516,41 +560,79 @@ export function InviteResidentDialog({ open, onOpenChange, resident }: { open: b
                 Cancel
               </Button>
               <Button
+                variant={mode === 'revoke' ? 'danger' : 'primary'}
                 loading={mutation.isPending}
                 onClick={() =>
                   mutation.mutate(undefined, {
-                    onSuccess: (inv) => setLink(`${window.location.origin}/invite/${inv.token}`),
+                    onSuccess: () => {
+                      if (mode === 'revoke') {
+                        toast.success('App access removed');
+                        onOpenChange(false);
+                      }
+                    },
                   })
                 }
               >
-                Create invite link
+                {mode === 'create' ? 'Create login' : mode === 'reset' ? 'Set new password' : 'Remove access'}
               </Button>
             </>
           )
         }
       >
-        {link ? (
-          <div className="space-y-3">
-            <p className="text-[13px] text-gray-600">Share this link with {resident.full_name}. It works once and expires in 7 days.</p>
-            <div className="flex gap-2">
-              <Input readOnly value={link} aria-label="Invitation link" onFocus={(e) => e.currentTarget.select()} />
+        {done ? (
+          <div className="space-y-4">
+            <p className="flex items-center gap-2 text-[13px] font-medium text-success-700">
+              <CheckCircle2 className="size-4" /> {mode === 'create' ? 'Login created' : 'Password updated'}
+            </p>
+            <dl className="space-y-1.5 rounded-lg border border-gray-200 bg-gray-25 p-3 text-[13px]">
+              <div className="flex gap-3">
+                <dt className="w-20 text-gray-500">Email</dt>
+                <dd className="font-mono text-gray-900">{done.email}</dd>
+              </div>
+              <div className="flex gap-3">
+                <dt className="w-20 text-gray-500">Password</dt>
+                <dd className="font-mono text-gray-900">{done.password}</dd>
+              </div>
+            </dl>
+            <p className="text-xs text-gray-500">Share these with {resident.full_name} privately. The password isn’t shown again, but you can reset it any time.</p>
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant="secondary"
-                size="icon"
-                aria-label="Copy link"
+                size="sm"
                 onClick={() => {
-                  void navigator.clipboard.writeText(link);
-                  toast.success('Link copied');
+                  void navigator.clipboard.writeText(shareText);
+                  toast.success('Login details copied');
                 }}
               >
-                <Copy />
+                <Copy /> Copy details
+              </Button>
+              <Button variant="secondary" size="sm" asChild>
+                <a href={`https://wa.me/${waNumber}?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noreferrer">
+                  <Send /> Share on WhatsApp
+                </a>
               </Button>
             </div>
           </div>
+        ) : mode === 'revoke' ? (
+          <InlineError error={mutation.error} />
         ) : (
-          <div className="space-y-3">
-            <Field label="Resident’s email" htmlFor="ir-email">
-              <Input id="ir-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <div className="space-y-4">
+            {mode === 'create' ? (
+              <Field label="Resident’s email (their username)" htmlFor="al-email" required>
+                <Input id="al-email" type="email" autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" />
+              </Field>
+            ) : (
+              <p className="text-[13px] text-gray-600">
+                Login email: <span className="font-medium text-gray-900">{loginEmail || '—'}</span>
+              </p>
+            )}
+            <Field label="Password" htmlFor="al-pass" hint="A strong password is generated for you. You can change it." required>
+              <div className="flex gap-2">
+                <Input id="al-pass" autoComplete="off" value={password} onChange={(e) => setPassword(e.target.value)} className="font-mono" />
+                <Button variant="secondary" size="icon" aria-label="Generate another password" onClick={() => setPassword(generateResidentPassword())}>
+                  <RefreshCw />
+                </Button>
+              </div>
             </Field>
             <InlineError error={mutation.error} />
           </div>

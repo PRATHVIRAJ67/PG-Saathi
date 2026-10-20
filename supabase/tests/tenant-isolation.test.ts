@@ -223,6 +223,13 @@ describe('roles and platform administration', () => {
 
     const self = await residentUser.api.getResident(r1);
     expect(self.invoices).toHaveLength(1);
+    // The resident app shows their own room and bed.
+    expect(self.stays).toHaveLength(1);
+    expect(self.stays[0]!.room_name).toBe('101');
+    const visibleBeds = await t.sqlAs<{ id: string }>(residentUser.id, 'select id from public.beds');
+    expect(visibleBeds.map((b) => b.id)).toEqual([O.bedIds[1]]);
+    const visibleRooms = await t.sqlAs<{ name: string }>(residentUser.id, 'select name from public.rooms');
+    expect(visibleRooms.map((r) => r.name)).toEqual(['101']);
     await expectAppError(residentUser.api.getResident(r2), 'not_found');
     await expectAppError(residentUser.api.listResidents(O.tenantId), 'not_found');
     await expectAppError(residentUser.api.dashboard(O.tenantId), 'not_found');

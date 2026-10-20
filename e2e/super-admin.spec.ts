@@ -2,6 +2,9 @@ import { expect, test } from '@playwright/test';
 
 const ADMIN = 'http://localhost:5174';
 
+// Both tests build an in-browser demo database; running them one at a time keeps them fast and stable.
+test.describe.configure({ mode: 'serial' });
+
 test('platform operator manages tenants without seeing resident data', async ({ page }) => {
   await page.goto(ADMIN);
   await page.getByRole('button', { name: 'Use the demo operator account' }).click({ timeout: 90_000 });
@@ -38,5 +41,5 @@ test('a regular owner account is refused by the admin app', async ({ page }) => 
   await page.getByLabel('Email').fill('owner@demo.pgsaas.local');
   await page.getByLabel('Password').fill('demo-owner-2026');
   await page.getByRole('button', { name: 'Sign in' }).click();
-  await expect(page.getByText('No platform access')).toBeVisible();
+  await expect(page.getByText('No platform access')).toBeVisible({ timeout: 60_000 });
 });

@@ -1,4 +1,4 @@
-import { createAdminService, createDataService, createSupabaseBackend } from '@pg/api-client';
+import { createAdminService, createDataService, createResidentAccessClient, createSupabaseBackend, unavailableResidentAccess } from '@pg/api-client';
 import { unavailableStorage, type Backend } from '@pg/api-client/react';
 
 export type BootResult =
@@ -9,6 +9,7 @@ const env = {
   supabaseUrl: (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim(),
   supabaseKey: (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim(),
   enableDemo: import.meta.env.VITE_ENABLE_DEMO === 'true',
+  residentApiUrl: (import.meta.env.VITE_RESIDENT_API_URL as string | undefined)?.trim(),
 };
 
 /**
@@ -30,6 +31,9 @@ export async function bootBackend(onProgress: (message: string) => void): Promis
           admin: createAdminService(sb.transport),
           auth: sb.auth,
           storage: sb.storage,
+          residentAccess: env.residentApiUrl
+            ? createResidentAccessClient(env.residentApiUrl, async () => (await sb.client.auth.getSession()).data.session?.access_token ?? null)
+            : unavailableResidentAccess,
         },
       };
     }

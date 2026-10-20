@@ -46,10 +46,6 @@ export default function RootLayout() {
               <StatusBar style="dark" />
               <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: semantic.background }, animation: 'slide_from_right' }}>
                 <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="payment/new" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
-                <Stack.Screen name="resident/new" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
-                <Stack.Screen name="assign-bed" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
-                <Stack.Screen name="expense/new" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
               </Stack>
             </AuthProvider>
           </QueryClientProvider>

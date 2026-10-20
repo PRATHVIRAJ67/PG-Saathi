@@ -14,7 +14,8 @@ import {
   Pencil,
   Phone,
   RotateCcw,
-  Send,
+  KeyRound,
+  Smartphone,
   TrendingUp,
   Wallet,
 } from 'lucide-react';
@@ -27,7 +28,7 @@ import { Table, TBody, TD, TH, THead, TR } from '@pg/ui-web/ui/table';
 import { ConfirmDialog, EmptyState, ErrorState, InvoiceStatusBadge, KeyValue, Money, PageHeader, PaymentStatusBadge, ResidentStatusBadge, StatCard } from '@pg/ui-web/common';
 import { useDialogs } from '@/app/stores';
 import { useCurrentWorkspace } from '@/app/workspace';
-import { AssignBedDialog, ChangeRentDialog, InviteResidentDialog, MoveOutDialog, ResidentFormDialog } from './resident-dialogs';
+import { AssignBedDialog, ChangeRentDialog, MoveOutDialog, ResidentAppLoginDialog, ResidentFormDialog, type AppLoginMode } from './resident-dialogs';
 import { DepositDialog } from '@/features/deposits/deposit-dialog';
 
 export function ResidentDetailPage() {
@@ -37,7 +38,8 @@ export function ResidentDetailPage() {
   const { data } = useBackend();
   const open = useDialogs((s) => s.open);
   const resident = useResident(tenantId, residentId);
-  const [dialog, setDialog] = useState<null | 'edit' | 'assign' | 'transfer' | 'moveout' | 'rent' | 'invite' | 'archive' | 'deposit'>(null);
+  const [dialog, setDialog] = useState<null | 'edit' | 'assign' | 'transfer' | 'moveout' | 'rent' | 'archive' | 'deposit'>(null);
+  const [appMode, setAppMode] = useState<AppLoginMode | null>(null);
   const [depositKind, setDepositKind] = useState<DepositTxnKind>('collected');
   const archive = useTenantMutation(tenantId, (archived: boolean) => data.setResidentArchived(residentId, archived));
 
@@ -122,11 +124,23 @@ export function ResidentDetailPage() {
                       </MenuItem>
                     </>
                   )}
-                  {can('residents.write') && !r.has_app_account && (
-                    <MenuItem onSelect={() => setDialog('invite')}>
-                      <Send /> Invite to resident app
-                    </MenuItem>
-                  )}
+                  {can('residents.write') &&
+                    (r.has_app_account ? (
+                      <>
+                        <MenuItem onSelect={() => setAppMode('reset')}>
+                          <KeyRound /> Reset app password
+                        </MenuItem>
+                        <MenuItem onSelect={() => setAppMode('revoke')}>
+                          <Smartphone /> Remove app access
+                        </MenuItem>
+                      </>
+                    ) : (
+                      r.status !== 'archived' && (
+                        <MenuItem onSelect={() => setAppMode('create')}>
+                          <Smartphone /> Give app login
+                        </MenuItem>
+                      )
+                    ))}
                   {can('residents.write') && (
                     <>
                       <MenuSeparator />
@@ -253,7 +267,19 @@ export function ResidentDetailPage() {
                   <KeyValue label="Company / college">{r.organization}</KeyValue>
                   <KeyValue label="Date of birth">{r.date_of_birth ? formatDate(r.date_of_birth) : null}</KeyValue>
                   <KeyValue label="Gender">{r.gender ? r.gender[0]!.toUpperCase() + r.gender.slice(1) : null}</KeyValue>
-                  <KeyValue label="Resident app">{r.has_app_account ? 'Linked' : r.pending_invitation ? `Invited (${r.pending_invitation.email})` : 'Not invited'}</KeyValue>
+                  <KeyValue label="PG Sathi app">
+                    {r.has_app_account ? (
+                      <span className="inline-flex items-center gap-1.5 text-success-700">
+                        <Smartphone className="size-3.5" /> Has app login{r.email ? ` (${r.email})` : ''}
+                      </span>
+                    ) : can('residents.write') && r.status !== 'archived' ? (
+                      <Button variant="link" size="sm" className="h-auto p-0 text-[13px]" onClick={() => setAppMode('create')}>
+                        Give app login
+                      </Button>
+                    ) : (
+                      'No app login'
+                    )}
+                  </KeyValue>
                 </dl>
               </CardBody>
             </Card>
@@ -333,7 +359,7 @@ export function ResidentDetailPage() {
       {activeStay && <AssignBedDialog open={dialog === 'transfer'} onOpenChange={(o) => !o && setDialog(null)} residentId={r.id} transferStay={activeStay} />}
       {activeStay && <MoveOutDialog open={dialog === 'moveout'} onOpenChange={(o) => !o && setDialog(null)} stay={activeStay} resident={r} />}
       {activeStay && <ChangeRentDialog open={dialog === 'rent'} onOpenChange={(o) => !o && setDialog(null)} stay={activeStay} />}
-      <InviteResidentDialog open={dialog === 'invite'} onOpenChange={(o) => !o && setDialog(null)} resident={r} />
+      {appMode && <ResidentAppLoginDialog open onOpenChange={(o) => !o && setAppMode(null)} resident={r} mode={appMode} />}
       <DepositDialog open={dialog === 'deposit'} onOpenChange={(o) => !o && setDialog(null)} residentId={r.id} residentName={r.full_name} heldPaise={held} duePaise={depositDue} initialKind={depositKind} />
       <ConfirmDialog
         open={dialog === 'archive'}

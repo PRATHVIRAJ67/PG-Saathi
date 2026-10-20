@@ -1,0 +1,15 @@
+{
+  "name": "@pg/resident-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Worker that lets owners create resident app logins (holds the Supabase secret key server-side).",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "wrangler": "^4.151.2"
+  }
+}

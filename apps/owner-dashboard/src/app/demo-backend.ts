@@ -40,6 +40,7 @@ export async function createBrowserDemoBackend(onProgress: (message: string) => 
     admin: demo.admin,
     auth: demo.auth,
     storage: unavailableStorage,
+    residentAccess: demo.residentAccess,
     demo: {
       description:
         'Demo mode: the real database schema is running inside your browser with fictional sample data. Nothing is sent to a server, and data stays on this device.',

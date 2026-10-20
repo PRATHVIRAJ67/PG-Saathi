@@ -1,74 +1,48 @@
-import { useState } from 'react';
-import { FlatList, RefreshControl, View } from 'react-native';
+import { View } from 'react-native';
 import { router } from 'expo-router';
-import { ChevronLeft, ChevronRight, CreditCard, Plus } from 'lucide-react-native';
+import { CreditCard } from 'lucide-react-native';
 import { colors } from '@pg/design-tokens';
-import { usePayments } from '@pg/api-client/react';
-import { PAYMENT_METHOD_LABELS, addMonthsISO, endOfMonthISO, formatINR, formatMonth, formatShortDate, startOfMonthISO, todayISO } from '@pg/shared';
-import { useWorkspaceContext } from '../../src/session';
-import { Avatar, Badge, Card, EmptyState, ErrorView, IconButton, LoadingList, Row, Screen, Txt } from '../../src/ui';
+import { useResident } from '@pg/api-client/react';
+import { PAYMENT_METHOD_LABELS, formatDate, formatINR } from '@pg/shared';
+import { useResidentContext } from '../../src/session';
+import { Badge, Card, Divider, EmptyState, ErrorView, LoadingList, Row, Screen, Txt } from '../../src/ui';
 
 export default function Payments() {
-  const { tenantId, propertyId, can } = useWorkspaceContext();
-  const [month, setMonth] = useState(startOfMonthISO(todayISO()));
-  const allowed = can('finance.read');
-  const q = usePayments(tenantId, { from: month, to: endOfMonthISO(month), property_id: propertyId, status: 'all', limit: 200 }, { enabled: allowed });
-
-  if (!allowed) {
-    return (
-      <Screen title="Payments">
-        <EmptyState icon={CreditCard} title="No access" description="Your role can’t view payments." />
-      </Screen>
-    );
-  }
+  const { tenantId, residentId } = useResidentContext();
+  const q = useResident(tenantId, residentId);
+  const payments = q.data?.payments ?? [];
+  const total = payments.filter((p) => p.status === 'recorded' || p.status === 'succeeded').reduce((n, p) => n + p.amount_paise, 0);
 
   return (
-    <Screen scroll={false} title="Payments" right={can('finance.write') ? <IconButton icon={Plus} label="Record payment" onPress={() => router.push('/payment/new')} /> : undefined}>
-      <View style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
-        <Card style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <IconButton icon={ChevronLeft} label="Previous month" onPress={() => setMonth(addMonthsISO(month, -1))} />
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <Txt variant="caption">{formatMonth(month)}</Txt>
-            <Txt variant="title" tabular color={colors.success[700]}>
-              {formatINR(q.data?.totals.amount_paise ?? 0)}
-            </Txt>
-          </View>
-          <IconButton icon={ChevronRight} label="Next month" onPress={() => setMonth(addMonthsISO(month, 1))} />
-        </Card>
-      </View>
+    <Screen title="Payments" subtitle="Receipts for money your PG has received" refreshing={q.isRefetching} onRefresh={() => void q.refetch()}>
       {q.isError ? (
         <ErrorView error={q.error} onRetry={() => void q.refetch()} />
       ) : q.isPending ? (
-        <View style={{ paddingHorizontal: 16 }}>
-          <LoadingList rows={6} />
-        </View>
+        <LoadingList />
+      ) : payments.length === 0 ? (
+        <EmptyState icon={CreditCard} title="No payments yet" description="When your PG records a payment from you, the receipt appears here." />
       ) : (
-        <FlatList
-          data={q.data.rows}
-          keyExtractor={(p) => p.id}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
-          refreshControl={<RefreshControl refreshing={q.isRefetching} onRefresh={() => void q.refetch()} colors={[colors.accent[600]]} />}
-          ListEmptyComponent={<EmptyState icon={CreditCard} title="No payments this month" />}
-          renderItem={({ item: p }) => (
-            <Card padded={false} style={{ marginBottom: 8 }}>
-              <Row
-                title={p.resident_name}
-                subtitle={`${formatShortDate(p.paid_on)} · ${PAYMENT_METHOD_LABELS[p.method]} · ${p.receipt_number}`}
-                left={<Avatar name={p.resident_name} />}
-                right={
-                  p.status === 'voided' ? (
-                    <Badge label="Voided" tone="danger" />
-                  ) : (
-                    <Txt variant="label" tabular color={colors.success[700]}>
-                      {formatINR(p.amount_paise)}
-                    </Txt>
-                  )
-                }
-                onPress={() => router.push(`/payment/${p.id}`)}
-              />
-            </Card>
-          )}
-        />
+        <>
+          <Card style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Txt variant="caption">Total paid</Txt>
+            <Txt variant="title" tabular color={colors.success[700]}>
+              {formatINR(total)}
+            </Txt>
+          </Card>
+          <Card padded={false}>
+            {payments.map((p, i) => (
+              <View key={p.id}>
+                {i > 0 && <Divider />}
+                <Row
+                  title={formatINR(p.amount_paise)}
+                  subtitle={`${formatDate(p.paid_on)} · ${PAYMENT_METHOD_LABELS[p.method]} · ${p.receipt_number}`}
+                  right={p.status === 'voided' ? <Badge label="Voided" tone="danger" /> : <Badge label="Received" tone="success" />}
+                  onPress={() => router.push(`/payment/${p.id}`)}
+                />
+              </View>
+            ))}
+          </Card>
+        </>
       )}
     </Screen>
   );

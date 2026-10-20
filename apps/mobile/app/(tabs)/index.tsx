@@ -1,11 +1,13 @@
-import { Pressable, View } from 'react-native';
+import { useMemo } from 'react';
+import { Linking, View } from 'react-native';
 import { router } from 'expo-router';
-import { BedDouble, CalendarCheck, CheckCircle2, CreditCard, Receipt, UserPlus } from 'lucide-react-native';
+import { BedDouble, CheckCircle2, ChevronRight, CreditCard, Phone } from 'lucide-react-native';
 import { colors } from '@pg/design-tokens';
-import { useDashboard, useProperties } from '@pg/api-client/react';
-import { PAYMENT_METHOD_LABELS, formatINR, formatMonth, formatShortDate, occupancyRate, percent } from '@pg/shared';
-import { useWorkspaceContext } from '../../src/session';
-import { Avatar, Badge, Card, Divider, EmptyState, ErrorView, Picker, ProgressBar, Row, Screen, SectionHeader, Skeleton, Stat, Txt } from '../../src/ui';
+import { useInvoice, useResident } from '@pg/api-client/react';
+import { PAYMENT_METHOD_LABELS, formatDate, formatINR, formatMonth, formatShortDate, relativeDays, todayISO } from '@pg/shared';
+import { useResidentContext } from '../../src/session';
+import { PayRentButton } from '../../src/pay';
+import { Avatar, Badge, Card, Divider, EmptyState, ErrorView, IconButton, Row, Screen, SectionHeader, Skeleton, Stat, Txt } from '../../src/ui';
 
 function greeting() {
   const h = new Date().getHours();
@@ -13,166 +15,145 @@ function greeting() {
 }
 
 export default function Home() {
-  const { me, workspace, tenantId, propertyId, setPropertyId, can } = useWorkspaceContext();
-  const properties = useProperties(tenantId);
-  const dash = useDashboard(tenantId, propertyId);
-  const d = dash.data;
-  const f = d?.finance;
-  const occ = d ? occupancyRate(d.occupancy.occupied, d.occupancy.total_beds, d.occupancy.unavailable) : 0;
-  const first = me.data?.user.full_name?.split(' ')[0];
-
-  const actions = [
-    { show: can('finance.write'), label: 'Record payment', icon: CreditCard, go: () => router.push('/payment/new') },
-    { show: can('residents.write'), label: 'Add resident', icon: UserPlus, go: () => router.push('/resident/new') },
-    { show: can('residents.write'), label: 'Assign bed', icon: BedDouble, go: () => router.push('/assign-bed') },
-    { show: can('finance.write'), label: 'Add expense', icon: Receipt, go: () => router.push('/expense/new') },
-  ].filter((a) => a.show);
+  const { link, tenantId, residentId } = useResidentContext();
+  const resident = useResident(tenantId, residentId);
+  const r = resident.data;
+  const open = useMemo(
+    () => (r?.invoices ?? []).filter((i) => i.status === 'issued' && i.balance_paise > 0).sort((a, b) => a.due_date.localeCompare(b.due_date)),
+    [r],
+  );
+  const oldest = open[0];
+  // Bills carry the PG's business details (name, phone, UPI ID).
+  const latestBill = oldest ?? r?.invoices[0];
+  const bill = useInvoice(tenantId, latestBill?.id ?? null);
+  const business = bill.data?.business;
+  const stay = r?.stays.find((s) => s.status === 'active');
+  const agreement = stay?.agreements.find((a) => a.effective_to === null);
+  const due = r?.balance?.outstanding_paise ?? 0;
+  const overdue = r?.balance?.overdue_paise ?? 0;
+  const held = r?.deposit ? r.deposit.collected_paise - r.deposit.refunded_paise - r.deposit.deducted_paise : 0;
+  const first = (r?.full_name ?? link?.resident_name ?? '').split(' ')[0];
 
   return (
-    <Screen refreshing={dash.isRefetching} onRefresh={() => void dash.refetch()}>
-      <View style={{ gap: 4 }}>
-        <Txt variant="caption">{workspace?.name}</Txt>
+    <Screen refreshing={resident.isRefetching} onRefresh={() => void Promise.all([resident.refetch(), bill.refetch()])}>
+      <View style={{ gap: 2 }}>
+        <Txt variant="caption">{link?.tenant_name}</Txt>
         <Txt variant="display">
           {greeting()}
           {first ? `, ${first}` : ''}
         </Txt>
       </View>
 
-      {(properties.data?.length ?? 0) > 1 && (
-        <Picker
-          title="Property"
-          value={propertyId ?? 'all'}
-          onChange={(v) => setPropertyId(v === 'all' ? null : v)}
-          placeholder="All properties"
-          options={[{ value: 'all', label: 'All properties' }, ...(properties.data ?? []).map((p) => ({ value: p.id, label: p.name }))]}
-        />
-      )}
-
-      {dash.isError ? (
-        <ErrorView error={dash.error} onRetry={() => void dash.refetch()} />
-      ) : !d ? (
+      {resident.isError ? (
+        <ErrorView error={resident.error} onRetry={() => void resident.refetch()} />
+      ) : !r ? (
         <View style={{ gap: 12 }}>
-          <Skeleton height={150} />
-          <Skeleton height={90} />
+          <Skeleton height={170} />
+          <Skeleton height={110} />
         </View>
       ) : (
         <>
-          {f && (
-            <Card style={{ backgroundColor: colors.navy[900], borderColor: colors.navy[900] }}>
-              <Txt variant="caption" color="rgba(255,255,255,0.7)">
-                Collected in {formatMonth(d.month)}
-              </Txt>
-              <Txt variant="display" tabular color={colors.white} style={{ marginTop: 4 }}>
-                {formatINR(f.collected_paise)}
-              </Txt>
-              <View style={{ marginTop: 12, gap: 6 }}>
-                <ProgressBar value={percent(f.billed_collected_paise, f.billed_paise)} color={colors.success[600]} />
+          <Card style={{ backgroundColor: colors.navy[900], borderColor: colors.navy[900], gap: 6 }}>
+            {due > 0 ? (
+              <>
                 <Txt variant="caption" color="rgba(255,255,255,0.7)">
-                  {f.billed_paise ? `${percent(f.billed_collected_paise, f.billed_paise)}% of ${formatINR(f.billed_paise)} billed this month` : 'No rent billed yet this month'}
+                  Rent due
                 </Txt>
+                <Txt variant="display" tabular color={colors.white}>
+                  {formatINR(due)}
+                </Txt>
+                {oldest && (
+                  <Txt variant="caption" color={overdue > 0 ? '#FCA5A5' : 'rgba(255,255,255,0.7)'}>
+                    {overdue > 0
+                      ? `${formatINR(overdue)} overdue · was due ${formatShortDate(oldest.due_date)}`
+                      : `Due ${formatDate(oldest.due_date)} (${relativeDays(oldest.due_date, todayISO())})`}
+                  </Txt>
+                )}
+              </>
+            ) : (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <CheckCircle2 size={28} color="#6EE7B7" />
+                <View>
+                  <Txt variant="heading" color={colors.white}>
+                    You’re all paid up
+                  </Txt>
+                  <Txt variant="caption" color="rgba(255,255,255,0.7)">
+                    No rent due right now.
+                  </Txt>
+                </View>
               </View>
-            </Card>
-          )}
-
-          <Card delay={60} style={{ flexDirection: 'row', gap: 16 }}>
-            {f && <Stat label="Outstanding" value={formatINR(f.outstanding_paise, { compact: f.outstanding_paise >= 1_00_000_00 })} hint={f.overdue_paise ? `${formatINR(f.overdue_paise)} overdue` : 'Nothing overdue'} tone={f.overdue_paise ? 'danger' : undefined} />}
-            <Stat label="Occupancy" value={`${occ}%`} hint={`${d.occupancy.vacant} vacant beds`} />
+            )}
+            {(r.balance?.credit_paise ?? 0) > 0 && (
+              <Txt variant="caption" color="#6EE7B7">
+                {formatINR(r.balance!.credit_paise)} advance credit will go towards your next bill.
+              </Txt>
+            )}
           </Card>
 
-          {f && f.stays_without_invoice > 0 && can('finance.write') && (
-            <Pressable onPress={() => router.push('/rent')} accessibilityRole="button">
-              <Card delay={90} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.accent[50], borderColor: colors.accent[200] }}>
-                <CalendarCheck size={20} color={colors.accent[700]} />
-                <Txt style={{ flex: 1 }} color={colors.accent[800]}>
-                  {f.stays_without_invoice} residents not billed for {formatMonth(d.month)}. Tap to generate rent.
-                </Txt>
-              </Card>
-            </Pressable>
+          {due > 0 && oldest && (
+            <PayRentButton
+              business={business}
+              amountPaise={due}
+              note={oldest.period_start ? `Rent ${formatMonth(oldest.period_start)}` : `Bill ${oldest.invoice_number}`}
+            />
           )}
 
-          {actions.length > 0 && (
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-              {actions.map((a) => (
-                <Pressable key={a.label} onPress={a.go} accessibilityRole="button" style={({ pressed }) => [{ width: '48%', flexGrow: 1, minHeight: 64, borderRadius: 14, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.gray[200], padding: 12, gap: 6, justifyContent: 'center' }, pressed && { backgroundColor: colors.accent[50] }]}>
-                  <a.icon size={20} color={colors.accent[600]} />
-                  <Txt variant="label">{a.label}</Txt>
-                </Pressable>
-              ))}
+          <Card delay={60} style={{ gap: 14 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: colors.accent[50], alignItems: 'center', justifyContent: 'center' }}>
+                <BedDouble size={18} color={colors.accent[600]} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Txt variant="heading">{stay ? `Room ${stay.room_name} · Bed ${stay.bed_label}` : 'No bed assigned'}</Txt>
+                <Txt variant="caption">{stay ? `${stay.property_name} · since ${formatDate(stay.move_in_date)}` : 'Your PG will assign your room.'}</Txt>
+              </View>
             </View>
-          )}
-
-          {f && (
-            <View>
-              <SectionHeader title="Recent payments" />
-              <Card padded={false}>
-                {f.recent_payments.length === 0 ? (
-                  <EmptyState icon={CreditCard} title="No payments yet" />
-                ) : (
-                  f.recent_payments.map((p, i) => (
-                    <View key={p.id}>
-                      {i > 0 && <Divider />}
-                      <Row
-                        title={p.resident_name}
-                        subtitle={`${formatShortDate(p.paid_on)} · ${PAYMENT_METHOD_LABELS[p.method]}`}
-                        left={<Avatar name={p.resident_name} />}
-                        right={<Txt variant="label" tabular color={colors.success[700]}>{formatINR(p.amount_paise)}</Txt>}
-                        onPress={() => router.push(`/payment/${p.id}`)}
-                      />
-                    </View>
-                  ))
-                )}
-              </Card>
-            </View>
-          )}
-
-          {f && (
-            <View>
-              <SectionHeader title="Highest dues" />
-              <Card padded={false}>
-                {f.top_outstanding.length === 0 ? (
-                  <EmptyState icon={CheckCircle2} title="Everyone is paid up" />
-                ) : (
-                  f.top_outstanding.map((r, i) => (
-                    <View key={r.resident_id}>
-                      {i > 0 && <Divider />}
-                      <Row
-                        title={r.full_name}
-                        subtitle={`${r.property_name} · since ${formatShortDate(r.oldest_due_date)}`}
-                        right={
-                          <View style={{ alignItems: 'flex-end', gap: 2 }}>
-                            <Txt variant="label" tabular>{formatINR(r.balance_paise)}</Txt>
-                            {r.overdue_paise > 0 && <Badge label="Overdue" tone="danger" />}
-                          </View>
-                        }
-                        onPress={() => router.push(`/resident/${r.resident_id}`)}
-                      />
-                    </View>
-                  ))
-                )}
-              </Card>
-            </View>
-          )}
+            {stay && (
+              <View style={{ flexDirection: 'row', gap: 16 }}>
+                <Stat label="Monthly rent" value={agreement ? formatINR(agreement.monthly_rent_paise) : '—'} hint={agreement ? `Due on day ${agreement.billing_day}` : undefined} />
+                <Stat label="Deposit held" value={formatINR(held)} hint={r.deposit?.agreed_paise ? `Agreed ${formatINR(r.deposit.agreed_paise)}` : undefined} />
+              </View>
+            )}
+          </Card>
 
           <View>
-            <SectionHeader title="Occupancy" />
-            <Card style={{ gap: 14 }}>
-              {d.properties.length === 0 ? (
-                <Txt variant="caption">No properties yet.</Txt>
+            <SectionHeader
+              title="Recent payments"
+              action={
+                r.payments.length > 0 ? <IconButton icon={ChevronRight} label="All payments" onPress={() => router.push('/(tabs)/payments')} /> : undefined
+              }
+            />
+            <Card padded={false}>
+              {r.payments.length === 0 ? (
+                <EmptyState icon={CreditCard} title="No payments yet" description="Payments appear here once your PG records them." />
               ) : (
-                d.properties.map((p) => (
-                  <Pressable key={p.id} onPress={() => router.push(`/property/${p.id}`)} style={{ gap: 6 }} accessibilityRole="button">
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                      <Txt variant="label" numberOfLines={1} style={{ flex: 1 }}>{p.name}</Txt>
-                      <Txt variant="caption" tabular>
-                        {p.occupied}/{p.beds - p.unavailable}
-                      </Txt>
-                    </View>
-                    <ProgressBar value={occupancyRate(p.occupied, p.beds, p.unavailable)} />
-                  </Pressable>
+                r.payments.slice(0, 3).map((p, i) => (
+                  <View key={p.id}>
+                    {i > 0 && <Divider />}
+                    <Row
+                      title={formatINR(p.amount_paise)}
+                      subtitle={`${formatDate(p.paid_on)} · ${PAYMENT_METHOD_LABELS[p.method]}`}
+                      right={p.status === 'voided' ? <Badge label="Voided" tone="danger" /> : <Badge label="Received" tone="success" />}
+                      onPress={() => router.push(`/payment/${p.id}`)}
+                    />
+                  </View>
                 ))
               )}
             </Card>
           </View>
+
+          {business && (
+            <Card delay={90} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <Avatar name={business.name} />
+              <View style={{ flex: 1 }}>
+                <Txt variant="label" style={{ color: colors.gray[900] }}>
+                  {business.name}
+                </Txt>
+                <Txt variant="caption">{business.contact_phone ?? business.contact_email ?? 'Your PG'}</Txt>
+              </View>
+              {business.contact_phone ? <IconButton icon={Phone} label={`Call ${business.name}`} onPress={() => void Linking.openURL(`tel:${business.contact_phone}`)} /> : null}
+            </Card>
+          )}
         </>
       )}
     </Screen>

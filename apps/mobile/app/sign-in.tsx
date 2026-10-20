@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { View } from 'react-native';
-import { Link, router } from 'expo-router';
-import { Building2 } from 'lucide-react-native';
-import { colors } from '@pg/design-tokens';
+import { Image, View } from 'react-native';
+import { router } from 'expo-router';
 import { useBackend } from '@pg/api-client/react';
 import { signInSchema } from '@pg/validation';
 import { Button, Card, Field, InlineError, Input, Screen, Txt } from '../src/ui';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const logo = require('../assets/icon.png');
 
 export default function SignIn() {
   const { auth, mode, demo } = useBackend();
@@ -36,41 +37,54 @@ export default function SignIn() {
 
   return (
     <Screen>
-      <View style={{ paddingTop: 24, gap: 8 }}>
-        <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: colors.navy[900], alignItems: 'center', justifyContent: 'center' }}>
-          <Building2 size={22} color={colors.white} />
-        </View>
-        <Txt variant="display" style={{ marginTop: 12 }}>Welcome back</Txt>
-        <Txt>Manage your PG from anywhere.</Txt>
+      <View style={{ paddingTop: 32, gap: 8 }}>
+        <Image source={logo} style={{ width: 56, height: 56, borderRadius: 14 }} accessibilityIgnoresInvertColors />
+        <Txt variant="display" style={{ marginTop: 16 }}>
+          Welcome to PG Sathi
+        </Txt>
+        <Txt>Sign in with the email and password your PG gave you.</Txt>
       </View>
       {mode === 'demo-snapshot' && demo ? (
         <Card>
-          <Txt variant="heading">Explore the sample workspace</Txt>
+          <Txt variant="heading">Explore the demo</Txt>
           <Txt variant="caption" style={{ marginTop: 4, marginBottom: 12 }}>
-            This build has no Supabase connection, so it shows a read-only snapshot of fictional demo data.
+            This build isn’t connected to a server, so it shows a read-only sample resident.
           </Txt>
-          <Button title="Open sample workspace" variant="accent" loading={busy} onPress={() => void submit({ email: demo.sampleAccount?.email ?? '', password: '' })} />
+          <Button title="Open sample resident" variant="accent" loading={busy} onPress={() => void submit({ email: demo.sampleAccount?.email ?? '', password: '' })} />
         </Card>
       ) : (
         <Card style={{ gap: 16 }}>
           <Field label="Email" error={fieldErrors.email}>
-            <Input value={email} onChangeText={setEmail} autoCapitalize="none" autoComplete="email" keyboardType="email-address" textContentType="emailAddress" invalid={!!fieldErrors.email} />
+            <Input
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              autoComplete="email"
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              accessibilityLabel="Email"
+              invalid={!!fieldErrors.email}
+            />
           </Field>
           <Field label="Password" error={fieldErrors.password}>
-            <Input value={password} onChangeText={setPassword} secureTextEntry autoComplete="password" textContentType="password" invalid={!!fieldErrors.password} onSubmitEditing={() => void submit()} />
+            <Input
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoComplete="password"
+              textContentType="password"
+              accessibilityLabel="Password"
+              invalid={!!fieldErrors.password}
+              onSubmitEditing={() => void submit()}
+            />
           </Field>
           <InlineError error={error} />
           <Button title="Sign in" loading={busy} onPress={() => void submit()} />
         </Card>
       )}
-      {mode === 'supabase' && (
-        <Txt style={{ textAlign: 'center' }}>
-          New here?{' '}
-          <Link href="/sign-up" style={{ color: colors.accent[700], fontFamily: 'Inter_600SemiBold' }}>
-            Create your account
-          </Link>
-        </Txt>
-      )}
+      <Txt variant="caption" style={{ textAlign: 'center' }}>
+        Don’t have a login, or forgot your password? Ask your PG owner. They can create or reset it from their dashboard.
+      </Txt>
     </Screen>
   );
 }

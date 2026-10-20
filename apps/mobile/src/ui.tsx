@@ -372,7 +372,8 @@ export function Badge({ label, tone = 'neutral' }: { label: string; tone?: Tone 
 }
 
 export function Avatar({ name, size = 36 }: { name: string; size?: number }) {
-  const parts = name.trim().split(/\s+/);
+  // Skip words like "(demo)" so initials are letters/digits only.
+  const parts = name.trim().split(/\s+/).filter((w) => /^[\p{L}\p{N}]/u.test(w));
   const initials = ((parts[0]?.[0] ?? '') + (parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? '') : '')).toUpperCase();
   return (
     <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: colors.accent[50], alignItems: 'center', justifyContent: 'center' }}>
