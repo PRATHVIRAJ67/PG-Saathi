@@ -1,5 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createAdminService, createDataService, createSnapshotAuth, createSnapshotTransport, createSupabaseBackend, type DemoSnapshot } from '@pg/api-client';
+import {
+  createAdminService,
+  createDataService,
+  createOnlinePaymentsClient,
+  createSnapshotAuth,
+  createSnapshotTransport,
+  createSupabaseBackend,
+  unavailableOnlinePayments,
+  type DemoSnapshot,
+} from '@pg/api-client';
 import { unavailableStorage, type Backend } from '@pg/api-client/react';
 
 /**
@@ -12,7 +21,18 @@ export function createBackend(): Backend {
   const key = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY?.trim();
   if (url && key) {
     const sb = createSupabaseBackend({ url, anonKey: key, storage: AsyncStorage, detectSessionInUrl: false });
-    return { mode: 'supabase', data: createDataService(sb.transport), admin: createAdminService(sb.transport), auth: sb.auth, storage: sb.storage };
+    // Online rent payments (owner's Razorpay) go through the PG Sathi payments service.
+    const paymentsUrl = process.env.EXPO_PUBLIC_RESIDENT_API_URL?.trim();
+    return {
+      mode: 'supabase',
+      data: createDataService(sb.transport),
+      admin: createAdminService(sb.transport),
+      auth: sb.auth,
+      storage: sb.storage,
+      onlinePayments: paymentsUrl
+        ? createOnlinePaymentsClient(paymentsUrl, async () => (await sb.client.auth.getSession()).data.session?.access_token ?? null)
+        : unavailableOnlinePayments,
+    };
   }
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const snapshot = require('./demo/snapshot.json') as DemoSnapshot;

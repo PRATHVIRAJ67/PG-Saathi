@@ -1,23 +1,32 @@
 # Edge Functions
 
-No Edge Functions are deployed yet. Everything the MVP needs runs as Postgres
-functions called through the Data API (see `../migrations`). No cron jobs,
-queues or schedulers exist; this is intentional for the MVP.
+No Supabase Edge Functions are deployed. Everything runs as Postgres
+functions called through the Data API (see `../migrations`), plus one small
+Cloudflare Worker, `apps/resident-api`, for the things that need a server
+secret. No cron jobs, queues or schedulers exist; this is intentional.
 
-## Planned (online payments phase)
+## Online payments (Razorpay, owner's own account)
 
-| Function | Purpose | Secrets (function env only) |
-| --- | --- | --- |
-| `razorpay-create-order` | Re-reads the invoice balance from the database, creates a Razorpay order, inserts a `payments` row with `source = 'gateway'` and `status = 'pending'`. | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `SUPABASE_SERVICE_ROLE_KEY` |
-| `razorpay-webhook` | Verifies `X-Razorpay-Signature` (HMAC-SHA256 of the raw body with the webhook secret), then marks the payment `succeeded` with `gateway_verified_at`, allocates it, and writes an audit log entry. Replays are no-ops because `(gateway_provider, gateway_payment_id)` is unique. | `RAZORPAY_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY` |
+Implemented in `apps/resident-api/src/payments.ts` and
+`../migrations/20261024000100_online_payments.sql`.
 
-These rules are already enforced by the schema (`payments` CHECK constraints):
+| Route | Purpose |
+| --- | --- |
+| `POST /payments/connect` | Owner pastes their Razorpay Key ID and Secret (and optionally a webhook secret). The Worker checks them with Razorpay, then stores them through `gateway_save_credentials` (service_role only). |
+| `POST /payments/order` | Resident starts paying a bill. `gateway_prepare_order` re-reads the live balance, the Worker creates the Razorpay order with the owner's keys and records it with `gateway_register_order`. Returns a hosted checkout URL. |
+| `GET /pay/:orderId` | Hosted Razorpay Checkout page. Only the key id reaches the page, never the secret. |
+| `POST /payments/confirm` | Checkout callback. Verifies `HMAC_SHA256(order_id|payment_id, key_secret)`, re-fetches the payment from Razorpay (capturing it if only authorised) and records it with `gateway_complete_order`. |
+| `POST /razorpay/webhook/:tenantId` | Razorpay webhook, set up by the owner in their Razorpay dashboard (events `payment.captured`, `order.paid`). Verifies `X-Razorpay-Signature` with the owner's webhook secret. |
 
-- a manual payment can never carry gateway fields;
-- a gateway payment can only be `succeeded` when `gateway_verified_at` is set.
+Rules enforced by the schema:
 
-A frontend callback must never mark anything as paid; it should only refresh
-data. The TypeScript contract lives in `packages/api-client/src/gateway.ts`.
+- keys live in `private.payment_gateways`, which no client role can read;
+- a payments row is created only by `gateway_complete_order`, as
+  `source = 'gateway'`, `status = 'succeeded'` with `gateway_verified_at`;
+- `(gateway_provider, gateway_payment_id)` is unique and the order row is
+  locked, so the checkout callback and the webhook arriving together record
+  one payment;
+- the frontend never marks anything as paid; it only refreshes data.
 
-Set function secrets with `supabase secrets set NAME=value`. Never put them in
-`VITE_*` or `EXPO_PUBLIC_*` variables: those are bundled into client code.
+The Worker's only secret is `SUPABASE_SECRET_KEY` (`npx wrangler secret put SUPABASE_SECRET_KEY`).
+Owners' Razorpay keys are data in the database, not Worker secrets.

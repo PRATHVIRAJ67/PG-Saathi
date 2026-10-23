@@ -59,7 +59,13 @@ export default function BillDetail() {
           </Card>
 
           {inv.status === 'issued' && inv.balance_paise > 0 && (
-            <PayRentButton business={inv.business} amountPaise={inv.balance_paise} note={inv.period_start ? `Rent ${formatMonth(inv.period_start)}` : `Bill ${inv.invoice_number}`} />
+            <PayRentButton
+              business={inv.business}
+              tenantId={tenantId}
+              invoiceId={inv.id}
+              invoiceBalancePaise={inv.balance_paise}
+              amountPaise={inv.balance_paise}
+              note={inv.period_start ? `Rent ${formatMonth(inv.period_start)}` : `Bill ${inv.invoice_number}`} />
           )}
 
           {inv.allocations.filter((a) => !a.voided_at).length > 0 && (

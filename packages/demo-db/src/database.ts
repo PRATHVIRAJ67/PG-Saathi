@@ -59,7 +59,7 @@ export function createPgliteTransport(db: PGlite, getUserId: () => string | null
       const sql = `select public.${fn}(${keys.map((k, i) => `${k} => $${i + 1}`).join(', ')}) as result`;
       const userId = getUserId();
       try {
-        return await db.transaction(async (tx) => {
+        const value = await db.transaction(async (tx) => {
           await tx.query("select set_config('role', $1, true), set_config('request.jwt.claims', $2, true)", [
             userId ? 'authenticated' : 'anon',
             JSON.stringify(userId ? { sub: userId, role: 'authenticated' } : { role: 'anon' }),
@@ -67,6 +67,10 @@ export function createPgliteTransport(db: PGlite, getUserId: () => string | null
           const result = await tx.query<{ result: T }>(sql, params);
           return (result.rows[0]?.result ?? null) as T;
         });
+        // PGlite skips writing to IndexedDB inside a transaction, so without this
+        // the last change before a reload (e.g. a public form submit) was lost.
+        await db.syncToFs();
+        return value;
       } catch (error) {
         throw toAppError(error);
       }

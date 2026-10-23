@@ -93,6 +93,9 @@ export default function Home() {
           {due > 0 && oldest && (
             <PayRentButton
               business={business}
+              tenantId={tenantId}
+              invoiceId={oldest.id}
+              invoiceBalancePaise={bill.data?.id === oldest.id ? bill.data.balance_paise : 0}
               amountPaise={due}
               note={oldest.period_start ? `Rent ${formatMonth(oldest.period_start)}` : `Bill ${oldest.invoice_number}`}
             />

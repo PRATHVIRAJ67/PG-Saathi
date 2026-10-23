@@ -6,3 +6,4 @@ export * from './uuid';
 export * from './snapshot';
 export * from './gateway';
 export * from './resident-access';
+export * from './online-payments';

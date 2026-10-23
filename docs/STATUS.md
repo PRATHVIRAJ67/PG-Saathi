@@ -17,7 +17,7 @@ it is designed or prepared but not built.
 | Audit log | Done | |
 | Storage buckets and policies | Partial | Policies written; tested only in Supabase, not in PGlite. Used for logos and expense receipts. Resident document upload UI is not built yet |
 | Maintenance tickets | Not started | Table and RLS exist; no API or UI yet |
-| Online payments (Razorpay) | Not started | Schema, constraints and contract prepared; no checkout, by design |
+| Online payments (Razorpay) | Partial | Each owner connects their own Razorpay keys (Settings → Online payments); residents pay from the app and payments are recorded after server-side verification. UPI QR stays as the manual option. Needs the migration applied and the Worker redeployed; not yet tried against real Razorpay test keys |
 | Subscription billing | Not started | Plans are assigned manually by platform admins |
 | Notifications and reminders | Not started | Out of scope (no schedulers); preferences column reserved |
 

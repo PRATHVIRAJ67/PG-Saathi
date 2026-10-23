@@ -10,59 +10,28 @@
  *   { action: 'create', resident_id, email, password }  create the login and link it
  *   { action: 'reset',  resident_id, password }         set a new password
  *   { action: 'revoke', resident_id }                   remove app access
+ *
+ * Online rent payments (owner's own Razorpay account) live in ./payments.ts.
  */
+import { HttpError, UUID, corsHeaders, json, type Env, type Fetch } from './http';
+import { routePayments } from './payments';
 
-export interface Env {
-  SUPABASE_URL: string;
-  SUPABASE_PUBLISHABLE_KEY: string;
-  SUPABASE_SECRET_KEY: string;
-  /** Comma-separated list of allowed browser origins. */
-  ALLOWED_ORIGINS: string;
-}
-
-type Fetch = (input: string, init?: RequestInit) => Promise<Response>;
-
-class HttpError extends Error {
-  constructor(
-    readonly status: number,
-    readonly code: string,
-    message: string,
-  ) {
-    super(message);
-  }
-}
+export type { Env } from './http';
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-function corsHeaders(origin: string | null, env: Env): Record<string, string> {
-  const allowed = env.ALLOWED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean);
-  const headers: Record<string, string> = {
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-    'Access-Control-Max-Age': '86400',
-    Vary: 'Origin',
-  };
-  if (origin && allowed.includes(origin)) headers['Access-Control-Allow-Origin'] = origin;
-  return headers;
-}
-
-function json(body: unknown, status: number, extra: Record<string, string>) {
-  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', ...extra } });
-}
 
 export async function handle(request: Request, env: Env, fetchImpl: Fetch = fetch): Promise<Response> {
   const cors = corsHeaders(request.headers.get('Origin'), env);
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
-  if (request.method !== 'POST' || new URL(request.url).pathname !== '/resident-access') {
-    return json({ error: { code: 'not_found', message: 'Not found' } }, 404, cors);
-  }
+  const { pathname } = new URL(request.url);
   try {
-    const result = await residentAccess(request, env, fetchImpl);
-    return json(result, 200, cors);
+    if (request.method === 'POST' && pathname === '/resident-access') return json(await residentAccess(request, env, fetchImpl), 200, cors);
+    const payments = await routePayments(request, env, fetchImpl, cors);
+    if (payments) return payments;
+    return json({ error: { code: 'not_found', message: 'Not found' } }, 404, cors);
   } catch (error) {
     if (error instanceof HttpError) return json({ error: { code: error.code, message: error.message } }, error.status, cors);
-    console.error('resident-access failed', error instanceof Error ? error.message : error);
+    console.error(`${pathname} failed`, error instanceof Error ? error.message : error);
     return json({ error: { code: 'unknown', message: 'Something went wrong. Please try again.' } }, 500, cors);
   }
 }

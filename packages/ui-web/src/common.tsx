@@ -201,7 +201,7 @@ export function InvoiceStatusBadge({ status }: { status: InvoicePaymentStatus })
 export function PaymentStatusBadge({ status }: { status: PaymentStatus }) {
   if (status === 'voided') return <Badge tone="danger">Voided</Badge>;
   if (status === 'recorded') return <Badge tone="neutral">Recorded manually</Badge>;
-  if (status === 'succeeded') return <Badge tone="success">Gateway verified</Badge>;
+  if (status === 'succeeded') return <Badge tone="success">Paid online</Badge>;
   return <Badge tone="warning">{status}</Badge>;
 }
 

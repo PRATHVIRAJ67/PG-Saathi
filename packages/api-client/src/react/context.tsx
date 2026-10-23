@@ -2,6 +2,7 @@ import { createContext, useContext, type ReactNode } from 'react';
 import type { AdminService, DataService } from '../service';
 import type { AuthAdapter, FileStorage } from '../transport';
 import type { ResidentAccessService } from '../resident-access';
+import type { OnlinePaymentsService } from '../online-payments';
 
 export type BackendMode = 'supabase' | 'demo' | 'demo-snapshot';
 
@@ -23,6 +24,8 @@ export interface Backend {
   storage: FileStorage;
   /** Owner-side resident app logins (owner dashboard only). */
   residentAccess?: ResidentAccessService;
+  /** Online rent payments through the owner's own Razorpay account. */
+  onlinePayments?: OnlinePaymentsService;
   demo?: DemoControls;
 }
 
