@@ -8,13 +8,17 @@ the file's contents.
 | Supabase template | File | Subject |
 | --- | --- | --- |
 | Magic Link | `magic-link.html` | `Your PG Sathi sign-in code: {{ .Token }}` |
-| Confirm signup | `confirm-signup.html` | `Confirm your email to start using PG Sathi` |
-| Reset Password | `reset-password.html` | `Reset your PG Sathi password` |
+| Confirm signup | `confirm-signup.html` | `Your PG Sathi verification code: {{ .Token }}` |
+| Reset Password | `reset-password.html` | `Your PG Sathi password reset code: {{ .Token }}` |
 | Change Email Address | `change-email.html` | `Confirm your new email for PG Sathi` |
 
-The Magic Link email shows the 6-digit code used by "Email me a sign-in code"
-and also a one-click sign-in button. The other emails use links, matching how
-the apps confirm sign-ups and reset passwords.
+Sign-in, sign-up and password reset use 6-digit codes only, with no links.
+Email services with click tracking (Brevo rewrites every link) can open a
+one-time link before the person does, which makes Supabase report it as
+expired; the code and the link share one token, so the link must not be in
+the email at all. The owner dashboard has a code box on the sign-in, verify
+email and forgot password pages. Change email still uses a link (there is no
+change-email screen in the apps).
 
 The layout uses tables and inline styles only, so it looks the same in Gmail,
 Outlook and phone mail apps. Supabase fills in `{{ .Token }}`,
