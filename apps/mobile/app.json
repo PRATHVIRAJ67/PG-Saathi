@@ -40,6 +40,14 @@
           "microphonePermission": false,
           "recordAudioAndroid": false
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraProguardRules": "# expo-camera finds ML Kit with Class.forName(), which the shrinker cannot see.\n# Without these, release builds lose the barcode reader and QR codes never scan.\n-keep class com.google.mlkit.** { *; }\n-keep class com.google.android.gms.internal.mlkit_vision_barcode** { *; }\n-keep class com.google.android.gms.vision.** { *; }\n-keep class com.google.android.gms.common.moduleinstall.** { *; }\n-keep class com.google.android.gms.code.scanner.** { *; }\n-keep class androidx.camera.mlkit.** { *; }\n-keep class expo.modules.camera.** { *; }\n-dontwarn com.google.mlkit.**"
+          }
+        }
       ]
     ],
     "experiments": {
