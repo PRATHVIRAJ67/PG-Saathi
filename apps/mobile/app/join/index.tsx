@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { ArrowLeft, Camera, QrCode } from 'lucide-react-native';
@@ -13,6 +13,11 @@ export default function JoinScan() {
   const [manual, setManual] = useState('');
   const [error, setError] = useState<string | null>(null);
   const handled = useRef(false);
+  // A fixed pixel size: an aspect-ratio box inside the animated card got measured
+  // mid-animation on Android, squashing the camera preview until it re-laid out.
+  const { width } = useWindowDimensions();
+  const size = Math.min(width - 32, 420);
+  const frame = Math.round(size * 0.64);
 
   const go = (text: string) => {
     const code = parseJoinCode(text);
@@ -33,9 +38,8 @@ export default function JoinScan() {
       </View>
       <Txt>Scan the join QR code at your PG’s front desk, or the one they sent you.</Txt>
 
-      <Card padded={false} style={{ overflow: 'hidden' }}>
-        {permission?.granted ? (
-          <View style={{ aspectRatio: 1, backgroundColor: colors.navy[900] }}>
+      {permission?.granted ? (
+          <View style={{ width: size, height: size, alignSelf: 'center', borderRadius: 16, overflow: 'hidden', backgroundColor: colors.navy[900] }}>
             <CameraView
               style={StyleSheet.absoluteFill}
               facing="back"
@@ -46,9 +50,13 @@ export default function JoinScan() {
               }}
             />
             {/* Aiming frame */}
-            <View pointerEvents="none" style={{ position: 'absolute', top: '18%', left: '18%', right: '18%', bottom: '18%', borderWidth: 3, borderColor: '#FFFFFF', borderRadius: 20, opacity: 0.85 }} />
+            <View
+              pointerEvents="none"
+              style={{ position: 'absolute', width: frame, height: frame, top: (size - frame) / 2, left: (size - frame) / 2, borderWidth: 3, borderColor: '#FFFFFF', borderRadius: 20, opacity: 0.85 }}
+            />
           </View>
         ) : (
+        <Card padded={false} style={{ overflow: 'hidden' }}>
           <View style={{ padding: 24, alignItems: 'center', gap: 12 }}>
             <View style={{ width: 56, height: 56, borderRadius: 16, backgroundColor: colors.accent[50], alignItems: 'center', justifyContent: 'center' }}>
               <QrCode size={26} color={colors.accent[600]} />
@@ -60,8 +68,8 @@ export default function JoinScan() {
             </Txt>
             {(!permission || permission.canAskAgain) && <Button title="Allow camera" icon={Camera} onPress={() => void requestPermission()} />}
           </View>
-        )}
-      </Card>
+        </Card>
+      )}
 
       {error && (
         <Txt variant="caption" color={colors.danger[600]} style={{ textAlign: 'center' }}>
