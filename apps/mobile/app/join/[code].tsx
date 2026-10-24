@@ -11,6 +11,9 @@ import { useAuth } from '../../src/session';
 import { Button, Card, ErrorView, Field, IconButton, InlineError, Input, LoadingList, Picker, Screen, Segmented, Txt } from '../../src/ui';
 
 const ROOM_PREFS = ['Single', 'Double sharing', 'Triple sharing', 'Any'];
+/** Indian mobile number: digits only, at most 10 (a leading +91 / 0 is dropped). */
+const tenDigits = (v: string) => v.replace(/\D/g, '').replace(/^(91|0)(?=\d{10}$)/, '').slice(0, 10);
+
 const ID_PROOFS = ['Aadhaar', 'PAN card', 'Driving licence', 'Passport', 'Voter ID', 'College / company ID', 'Other'];
 
 type Step = 'details' | 'account' | 'verify' | 'done';
@@ -43,7 +46,8 @@ export default function JoinForm() {
   const needsProperty = !!info.data && !info.data.property && info.data.properties.length > 1;
   const detailsProblem =
     f.full_name.trim().length < 2 ? 'Enter your full name.'
-    : f.phone.replace(/\D/g, '').length < 10 ? 'Enter your 10-digit phone number.'
+    : !/^[6-9]\d{9}$/.test(f.phone) ? 'Enter your 10-digit mobile number.'
+    : f.emergency_contact_phone && !/^\d{10}$/.test(f.emergency_contact_phone) ? 'Emergency contact phone should be 10 digits.'
     : needsProperty && !f.property_id ? 'Choose which property you want to join.'
     : f.preferred_move_in && !/^\d{4}-\d{2}-\d{2}$/.test(f.preferred_move_in) ? 'Write the move-in date as YYYY-MM-DD, e.g. 2026-11-01.'
     : null;
@@ -181,7 +185,7 @@ export default function JoinForm() {
               <Input value={f.full_name} onChangeText={set('full_name')} autoComplete="name" accessibilityLabel="Full name" />
             </Field>
             <Field label="Phone" required>
-              <Input value={f.phone} onChangeText={set('phone')} keyboardType="phone-pad" autoComplete="tel" placeholder="98450 00000" accessibilityLabel="Phone" />
+              <Input value={f.phone} onChangeText={(v) => set('phone')(tenDigits(v))} prefix="+91" keyboardType="number-pad" autoComplete="tel" maxLength={10} placeholder="9845000000" accessibilityLabel="Phone" />
             </Field>
             <Field label="Gender">
               <Segmented value={f.gender} onChange={(v) => setF((s) => ({ ...s, gender: v }))} options={[{ value: 'male', label: 'Male' }, { value: 'female', label: 'Female' }, { value: 'other', label: 'Other' }]} />
@@ -215,7 +219,7 @@ export default function JoinForm() {
               <Input value={f.emergency_contact_name} onChangeText={set('emergency_contact_name')} placeholder="Name" accessibilityLabel="Emergency contact name" />
             </Field>
             <Field label="Their phone">
-              <Input value={f.emergency_contact_phone} onChangeText={set('emergency_contact_phone')} keyboardType="phone-pad" accessibilityLabel="Emergency contact phone" />
+              <Input value={f.emergency_contact_phone} onChangeText={(v) => set('emergency_contact_phone')(tenDigits(v))} prefix="+91" keyboardType="number-pad" maxLength={10} accessibilityLabel="Emergency contact phone" />
             </Field>
             <Field label="Relation">
               <Input value={f.emergency_contact_relation} onChangeText={set('emergency_contact_relation')} placeholder="e.g. Father" accessibilityLabel="Relation" />

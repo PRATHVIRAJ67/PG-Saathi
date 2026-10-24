@@ -43,7 +43,7 @@ export default function SignIn() {
         <Txt variant="display" style={{ marginTop: 16 }}>
           Welcome to PG Sathi
         </Txt>
-        <Txt>Sign in with the email and password your PG gave you.</Txt>
+        <Txt>Sign in with your email and password.</Txt>
       </View>
       {mode === 'demo-snapshot' && demo ? (
         <Card>
@@ -81,6 +81,7 @@ export default function SignIn() {
           </Field>
           <InlineError error={error} />
           <Button title="Sign in" loading={busy} onPress={() => void submit()} />
+          <Button title="Forgot password?" variant="ghost" compact onPress={() => router.push(email.trim() ? `/forgot-password?email=${encodeURIComponent(email.trim())}` : '/forgot-password')} />
         </Card>
       )}
       {mode !== 'demo-snapshot' && (
@@ -90,9 +91,6 @@ export default function SignIn() {
           <Button title="Join a PG by scanning QR" icon={QrCode} variant="secondary" onPress={() => router.push('/join')} />
         </Card>
       )}
-      <Txt variant="caption" style={{ textAlign: 'center' }}>
-        Forgot your password? Ask your PG owner. They can reset it from their dashboard.
-      </Txt>
     </Screen>
   );
 }
