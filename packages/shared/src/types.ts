@@ -74,6 +74,20 @@ export interface JoinRequest extends Required<Omit<JoinRequestInput, 'property_i
   reject_reason: string | null;
   /** A current resident with the same phone number, if any. */
   existing_resident: { id: UUID; full_name: string } | null;
+  /** Sent from the resident app while signed in: approving also opens the app for them. */
+  from_app: boolean;
+}
+
+/** The signed-in person's own join request, as the resident app shows it. */
+export interface MyJoinRequest {
+  id: UUID;
+  status: JoinRequestStatus;
+  created_at: string;
+  reviewed_at: string | null;
+  reject_reason: string | null;
+  business_name: string;
+  property_name: string | null;
+  contact_phone: string | null;
 }
 
 /** An owner's Razorpay connection as the dashboard sees it. Secrets never leave the server. */

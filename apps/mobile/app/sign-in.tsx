@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Image, View } from 'react-native';
 import { router } from 'expo-router';
+import { QrCode } from 'lucide-react-native';
 import { useBackend } from '@pg/api-client/react';
 import { signInSchema } from '@pg/validation';
 import { Button, Card, Field, InlineError, Input, Screen, Txt } from '../src/ui';
@@ -82,8 +83,15 @@ export default function SignIn() {
           <Button title="Sign in" loading={busy} onPress={() => void submit()} />
         </Card>
       )}
+      {mode !== 'demo-snapshot' && (
+        <Card style={{ gap: 10 }}>
+          <Txt variant="heading">New to a PG?</Txt>
+          <Txt variant="caption">Scan your PG’s join QR code, fill in your details and create your login. You’ll get in once the PG approves you.</Txt>
+          <Button title="Join a PG by scanning QR" icon={QrCode} variant="secondary" onPress={() => router.push('/join')} />
+        </Card>
+      )}
       <Txt variant="caption" style={{ textAlign: 'center' }}>
-        Don’t have a login, or forgot your password? Ask your PG owner. They can create or reset it from their dashboard.
+        Forgot your password? Ask your PG owner. They can reset it from their dashboard.
       </Txt>
     </Screen>
   );

@@ -13,6 +13,7 @@ import type {
   JoinRequest,
   JoinRequestInput,
   JoinRequestStatus,
+  MyJoinRequest,
   PaymentGatewayStatus,
   AvailableBeds,
   BedRequest,
@@ -451,6 +452,8 @@ export function createDataService(transport: RpcTransport) {
     joinLinkInfo: (code: string) => call<JoinLinkInfo>('join_link_info', { p_code: code }),
     submitJoinRequest: (code: string, input: JoinRequestInput) =>
       call<{ ok: true; business_name: string }>('submit_join_request', { p_code: code, p_data: compact(input) }),
+    /** Resident app: my own requests (signed in). */
+    myJoinRequests: () => call<MyJoinRequest[]>('my_join_requests'),
     // Owner side:
     listJoinLinks: (tenantId: UUID) => call<JoinLink[]>('list_join_links', { p_tenant_id: tenantId }),
     createJoinLink: (tenantId: UUID, propertyId: UUID | null = null) =>

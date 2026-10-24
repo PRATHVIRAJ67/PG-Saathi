@@ -22,6 +22,8 @@ export interface SignUpResult {
   session: AuthSession | null;
   /** True when the user must confirm their email before signing in. */
   needsVerification: boolean;
+  /** The email already has a login (Supabase hides this; no email is sent). */
+  alreadyRegistered?: boolean;
 }
 
 export interface AuthAdapter {

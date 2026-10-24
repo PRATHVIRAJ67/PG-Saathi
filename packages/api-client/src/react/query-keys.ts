@@ -11,6 +11,7 @@ export const queryKeys = {
   paymentGateway: (tenantId: string) => ['tenant', tenantId, 'payment-gateway'] as const,
   onlinePayments: (tenantId: string) => ['tenant', tenantId, 'online-payments'] as const,
   joinLinks: (tenantId: string) => ['tenant', tenantId, 'join-links'] as const,
+  myJoinRequests: () => ['me', 'join-requests'] as const,
   joinRequests: (tenantId: string, status: string) => ['tenant', tenantId, 'join-requests', status] as const,
   properties: (tenantId: string, includeArchived = false) => ['tenant', tenantId, 'properties', { includeArchived }] as const,
   property: (tenantId: string, propertyId: string) => ['tenant', tenantId, 'property', propertyId] as const,

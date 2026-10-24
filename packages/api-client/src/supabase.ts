@@ -63,7 +63,9 @@ export function createSupabaseBackend(config: SupabaseConfig) {
       });
       if (error) throw authError(error);
       const session = toSession(data.session);
-      return { session, needsVerification: !session };
+      // An existing email comes back as a user with no identities and no email is sent.
+      const alreadyRegistered = !session && !!data.user && (data.user.identities?.length ?? 0) === 0;
+      return { session, needsVerification: !session && !alreadyRegistered, alreadyRegistered };
     },
     async signIn({ email, password }) {
       const { data, error } = await client.auth.signInWithPassword({ email, password });
