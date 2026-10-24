@@ -18,6 +18,7 @@ export default function Index() {
     );
   }
   if (state.status === 'signed_out') return <Redirect href="/sign-in" />;
+  if (state.session.mustChangePassword) return <Redirect href="/set-password" />;
   if (me.isError) return <ErrorView error={me.error} onRetry={() => void me.refetch()} />;
   if ((me.data?.resident_links.length ?? 0) === 0) return <Redirect href="/no-access" />;
   return <Redirect href="/(tabs)" />;

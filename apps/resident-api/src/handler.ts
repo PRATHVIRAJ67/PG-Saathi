@@ -11,10 +11,15 @@
  *   { action: 'reset',  resident_id, password }         set a new password
  *   { action: 'revoke', resident_id }                   remove app access
  *
+ * With send_email: true, create and reset also email the resident their login
+ * and temporary password. Either way the login is flagged must_change_password,
+ * so the app asks them to choose their own password first.
+ *
  * Online rent payments (owner's own Razorpay account) live in ./payments.ts.
  */
 import { HttpError, UUID, corsHeaders, json, type Env, type Fetch } from './http';
 import { routePayments } from './payments';
+import { loginEmailHtml, sendEmail } from './email';
 
 export type { Env } from './http';
 
@@ -40,7 +45,7 @@ async function residentAccess(request: Request, env: Env, fetchImpl: Fetch) {
   const token = request.headers.get('Authorization')?.replace(/^Bearer\s+/i, '');
   if (!token) throw new HttpError(401, 'not_authenticated', 'Sign in to continue.');
 
-  let body: { action?: string; resident_id?: string; email?: string; password?: string };
+  let body: { action?: string; resident_id?: string; email?: string; password?: string; send_email?: boolean };
   try {
     body = await request.json();
   } catch {
@@ -87,7 +92,7 @@ async function residentAccess(request: Request, env: Env, fetchImpl: Fetch) {
   if (membership.role !== 'owner' && membership.role !== 'manager') {
     throw new HttpError(403, 'forbidden', 'Only the owner or a manager can manage resident app logins.');
   }
-  const [tenant] = await rows<{ status: string }>(`/rest/v1/tenants?id=eq.${resident.tenant_id}&select=status`);
+  const [tenant] = await rows<{ status: string; name: string }>(`/rest/v1/tenants?id=eq.${resident.tenant_id}&select=status,name`);
   if (tenant && (tenant.status === 'suspended' || tenant.status === 'cancelled')) {
     throw new HttpError(403, 'tenant_inactive', `This workspace is ${tenant.status}. Contact support to restore access.`);
   }
@@ -111,12 +116,29 @@ async function residentAccess(request: Request, env: Env, fetchImpl: Fetch) {
   const password = body.password ?? '';
   if (password.length < 8 || password.length > 72) throw new HttpError(400, 'validation', 'Password must be 8–72 characters.');
 
+  const mail = async (to: string, reset: boolean) => {
+    if (!body.send_email) return { emailed: false, email_error: null };
+    const error = await sendEmail(env, fetchImpl, {
+      to,
+      toName: resident.full_name,
+      subject: reset ? 'Your new PG Sathi password' : `Your PG Sathi app login for ${tenant?.name ?? 'your PG'}`,
+      html: loginEmailHtml({ name: resident.full_name, business: tenant?.name ?? 'Your PG', email: to, password, reset }),
+    });
+    return { emailed: !error, email_error: error };
+  };
+
   if (action === 'reset') {
     if (!link) throw new HttpError(409, 'no_access', 'This resident does not have an app login yet.');
-    const res = await admin(`/auth/v1/admin/users/${link.user_id}`, { method: 'PUT', body: JSON.stringify({ password }) });
+    const res = await admin(`/auth/v1/admin/users/${link.user_id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ password, user_metadata: { must_change_password: true } }),
+    });
     if (!res.ok) throw new HttpError(400, 'validation', await authMessage(res, 'Could not set the password.'));
-    await audit('resident.app_password_reset', {});
-    return { ok: true };
+    const updated = (await res.json().catch(() => ({}))) as { email?: string };
+    const loginEmail = updated.email ?? resident.email ?? '';
+    const sent = loginEmail ? await mail(loginEmail, true) : { emailed: false, email_error: 'No email on this login.' };
+    await audit('resident.app_password_reset', { emailed: sent.emailed });
+    return { ok: true, email: loginEmail, ...sent };
   }
 
   // action === 'create'
@@ -127,7 +149,7 @@ async function residentAccess(request: Request, env: Env, fetchImpl: Fetch) {
 
   const created = await admin('/auth/v1/admin/users', {
     method: 'POST',
-    body: JSON.stringify({ email, password, email_confirm: true, user_metadata: { full_name: resident.full_name, kind: 'resident' } }),
+    body: JSON.stringify({ email, password, email_confirm: true, user_metadata: { full_name: resident.full_name, kind: 'resident', must_change_password: true } }),
   });
   if (!created.ok) {
     if (created.status === 422) {
@@ -150,8 +172,9 @@ async function residentAccess(request: Request, env: Env, fetchImpl: Fetch) {
   if (resident.email !== email) {
     await admin(`/rest/v1/residents?id=eq.${resident.id}`, { method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ email }) });
   }
-  await audit('resident.app_access_granted', { email });
-  return { ok: true, email };
+  const sent = await mail(email, false);
+  await audit('resident.app_access_granted', { email, emailed: sent.emailed });
+  return { ok: true, email, ...sent };
 }
 
 async function authMessage(res: Response, fallback: string): Promise<string> {

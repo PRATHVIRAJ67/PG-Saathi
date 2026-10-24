@@ -91,7 +91,7 @@ export async function createDemoBackend(options: DemoBackendOptions) {
       const userId = await auth.createUser({ email: normalized, password, confirmed: true });
       await db.query('insert into public.resident_user_links (tenant_id, resident_id, user_id) values ($1, $2, $3)', [tenantId, residentId, userId]);
       await db.query('update public.residents set email = $2 where id = $1', [residentId, normalized]);
-      return { email: normalized };
+      return { email: normalized, emailed: false, email_error: 'Emails are not sent in demo mode.' };
     },
     async resetPassword(residentId, password) {
       const { linkedUser } = await authorize(residentId);

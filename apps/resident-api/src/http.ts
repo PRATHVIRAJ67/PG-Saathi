@@ -4,6 +4,11 @@ export interface Env {
   SUPABASE_SECRET_KEY: string;
   /** Comma-separated list of allowed browser origins. */
   ALLOWED_ORIGINS: string;
+  /** Brevo API key (secret) for login emails; without it emails are skipped. */
+  BREVO_API_KEY?: string;
+  /** Verified Brevo sender address and display name. */
+  EMAIL_FROM: string;
+  EMAIL_FROM_NAME?: string;
 }
 
 export type Fetch = (input: string, init?: RequestInit) => Promise<Response>;

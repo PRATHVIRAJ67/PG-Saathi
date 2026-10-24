@@ -6,6 +6,7 @@ const env: Env = {
   SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test',
   SUPABASE_SECRET_KEY: 'sb_secret_test',
   ALLOWED_ORIGINS: 'https://admin.example.com',
+  EMAIL_FROM: 'hello@pgsathi.test',
 };
 const TENANT = '22222222-2222-4222-8222-222222222222';
 const INVOICE = '33333333-3333-4333-8333-333333333333';

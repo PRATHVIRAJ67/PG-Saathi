@@ -16,6 +16,8 @@ export interface AuthSession {
   userId: string;
   email: string | null;
   emailConfirmed: boolean;
+  /** Signed in with a temporary password from their PG: ask for a new one first. */
+  mustChangePassword?: boolean;
 }
 
 export interface SignUpResult {

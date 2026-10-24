@@ -113,7 +113,7 @@ export default function JoinScan() {
       )}
 
       <Card style={{ gap: 12 }}>
-        <Field label="Or enter the code" hint="The letters and numbers at the end of the join link, or paste the whole link.">
+        <Field label="Or enter the code" hint="The join code your PG shared (shown under their QR), or paste the whole join link.">
           <Input
             value={manual}
             onChangeText={(v) => {
@@ -122,7 +122,7 @@ export default function JoinScan() {
             }}
             autoCapitalize="none"
             autoCorrect={false}
-            placeholder="e.g. 3fe3eda314fd4e"
+            placeholder="e.g. AD90 2C3B 8D2B 40"
             accessibilityLabel="Join code"
             onSubmitEditing={() => {
               handled.current = false;

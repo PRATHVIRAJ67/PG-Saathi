@@ -8,9 +8,18 @@ import { AppError } from './errors';
  */
 export interface ResidentAccessService {
   readonly available: boolean;
-  create(residentId: string, email: string, password: string): Promise<{ email: string }>;
-  resetPassword(residentId: string, password: string): Promise<void>;
+  /** With sendEmail, the resident is emailed their login and temporary password. */
+  create(residentId: string, email: string, password: string, options?: { sendEmail?: boolean }): Promise<LoginResult>;
+  resetPassword(residentId: string, password: string, options?: { sendEmail?: boolean }): Promise<LoginResult | void>;
   revoke(residentId: string): Promise<void>;
+}
+
+export interface LoginResult {
+  email: string;
+  /** The login email was sent. */
+  emailed?: boolean;
+  /** Why it was not sent, when sendEmail was asked for. */
+  email_error?: string | null;
 }
 
 export const unavailableResidentAccess: ResidentAccessService = {
@@ -47,10 +56,10 @@ export function createResidentAccessClient(baseUrl: string, getAccessToken: () =
   }
   return {
     available: true,
-    create: (residentId, email, password) => post<{ email: string }>({ action: 'create', resident_id: residentId, email, password }),
-    resetPassword: async (residentId, password) => {
-      await post({ action: 'reset', resident_id: residentId, password });
-    },
+    create: (residentId, email, password, options) =>
+      post<LoginResult>({ action: 'create', resident_id: residentId, email, password, send_email: !!options?.sendEmail }),
+    resetPassword: (residentId, password, options) =>
+      post<LoginResult>({ action: 'reset', resident_id: residentId, password, send_email: !!options?.sendEmail }),
     revoke: async (residentId) => {
       await post({ action: 'revoke', resident_id: residentId });
     },

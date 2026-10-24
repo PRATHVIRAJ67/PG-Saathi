@@ -17,6 +17,7 @@ function toSession(session: Session | null): AuthSession | null {
     userId: session.user.id,
     email: session.user.email ?? null,
     emailConfirmed: Boolean(session.user.email_confirmed_at ?? session.user.confirmed_at),
+    mustChangePassword: session.user.user_metadata?.must_change_password === true,
   };
 }
 
@@ -94,7 +95,8 @@ export function createSupabaseBackend(config: SupabaseConfig) {
       if (error) throw authError(error);
     },
     async updatePassword(password) {
-      const { error } = await client.auth.updateUser({ password });
+      // Setting your own password also clears the temporary-password flag.
+      const { error } = await client.auth.updateUser({ password, data: { must_change_password: false } });
       if (error) throw authError(error);
     },
     async signOut() {

@@ -6,6 +6,8 @@ const env: Env = {
   SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test',
   SUPABASE_SECRET_KEY: 'sb_secret_test',
   ALLOWED_ORIGINS: 'https://admin.example.com',
+  BREVO_API_KEY: 'xkeysib-test',
+  EMAIL_FROM: 'hello@pgsathi.test',
 };
 
 const RESIDENT = '11111111-1111-4111-8111-111111111111';
@@ -24,6 +26,7 @@ function fakeSupabase() {
     authUsers: [] as { id: string; email: string; password: string }[],
     links: [] as { tenant_id: string; resident_id: string; user_id: string }[],
     audit: [] as { action: string; actor_id: string }[],
+    emails: [] as { to: string; subject: string; html: string }[],
     secretUsed: 0,
   };
   const ok = (body: unknown, status = 200) =>
@@ -34,6 +37,12 @@ function fakeSupabase() {
     const headers = init.headers as Record<string, string>;
     const method = init.method ?? 'GET';
     const q = (k: string) => url.searchParams.get(k)?.replace(/^eq\./, '');
+    if (url.hostname === 'api.brevo.com') {
+      if ((init.headers as Record<string, string>)['api-key'] !== env.BREVO_API_KEY) return ok({ message: 'bad key' }, 401);
+      const b = JSON.parse(String(init.body));
+      state.emails.push({ to: b.to[0].email, subject: b.subject, html: b.htmlContent });
+      return ok({ messageId: 'm1' }, 201);
+    }
     if (url.pathname === '/auth/v1/user') {
       const user = state.sessions[(headers.Authorization ?? '').replace('Bearer ', '')];
       return user ? ok({ id: user }) : ok({ msg: 'invalid' }, 401);
@@ -47,7 +56,7 @@ function fakeSupabase() {
       case 'GET /rest/v1/tenant_memberships':
         return ok(state.memberships.filter((m) => m.tenant_id === q('tenant_id') && m.user_id === q('user_id')));
       case 'GET /rest/v1/tenants':
-        return ok([{ status: state.tenantStatus }]);
+        return ok([{ status: state.tenantStatus, name: 'Sunrise Stays' }]);
       case 'GET /rest/v1/resident_user_links':
         return ok(state.links.filter((l) => l.resident_id === q('resident_id')));
       case 'POST /auth/v1/admin/users': {
@@ -73,7 +82,9 @@ function fakeSupabase() {
         if (method === 'PUT' && url.pathname.startsWith('/auth/v1/admin/users/')) {
           const user = state.authUsers.find((u) => url.pathname.endsWith(u.id));
           if (!user) return ok({ msg: 'not found' }, 404);
-          user.password = JSON.parse(String(init.body)).password;
+          const b = JSON.parse(String(init.body));
+          user.password = b.password;
+          Object.assign(user, { user_metadata: { ...(user as { user_metadata?: object }).user_metadata, ...b.user_metadata } });
           return ok(user);
         }
         return ok({ message: `unexpected ${method} ${url.pathname}` }, 500);
@@ -97,7 +108,7 @@ describe('resident app-login service', () => {
   it('owner creates a login: confirmed account, linked, email saved, audited', async () => {
     const res = await call(fake, 'owner-token', { action: 'create', resident_id: RESIDENT, email: 'Rohit@Example.com', password: 'secret-pass-1' });
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ ok: true, email: 'rohit@example.com' });
+    expect(await res.json()).toEqual({ ok: true, email: 'rohit@example.com', emailed: false, email_error: null });
     expect(fake.state.authUsers).toHaveLength(1);
     expect(fake.state.links).toEqual([{ tenant_id: TENANT, resident_id: RESIDENT, user_id: 'user-1' }]);
     expect(fake.state.residents[0]!.email).toBe('rohit@example.com');
@@ -147,6 +158,38 @@ describe('resident app-login service', () => {
     expect(revoke.status).toBe(200);
     expect(fake.state.links).toHaveLength(0);
     expect((await call(fake, 'owner-token', { action: 'reset', resident_id: RESIDENT, password: 'new-pass-123' })).status).toBe(409);
+  });
+
+  it('emails the login and temporary password when asked, and flags it for a password change', async () => {
+    const res = await call(fake, 'owner-token', { action: 'create', resident_id: RESIDENT, email: 'rohit@example.com', password: 'Temp-pass-123', send_email: true });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ ok: true, email: 'rohit@example.com', emailed: true });
+    expect(fake.state.emails).toHaveLength(1);
+    expect(fake.state.emails[0]!.to).toBe('rohit@example.com');
+    expect(fake.state.emails[0]!.subject).toContain('Sunrise Stays');
+    expect(fake.state.emails[0]!.html).toContain('Temp-pass-123');
+
+    const reset = await call(fake, 'owner-token', { action: 'reset', resident_id: RESIDENT, password: 'Another-pass-9', send_email: true });
+    expect(await reset.json()).toMatchObject({ ok: true, emailed: true });
+    expect(fake.state.emails[1]!.html).toContain('Another-pass-9');
+
+    // Without send_email nothing is sent.
+    await call(fake, 'owner-token', { action: 'reset', resident_id: RESIDENT, password: 'Third-pass-99' });
+    expect(fake.state.emails).toHaveLength(2);
+  });
+
+  it('still creates the login when email is not set up', async () => {
+    const res = await handle(
+      new Request('https://api.example.com/resident-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Origin: 'https://admin.example.com', Authorization: 'Bearer owner-token' },
+        body: JSON.stringify({ action: 'create', resident_id: RESIDENT, email: 'rohit@example.com', password: 'Temp-pass-123', send_email: true }),
+      }),
+      { ...env, BREVO_API_KEY: undefined },
+      fake.fetchImpl,
+    );
+    expect(await res.json()).toMatchObject({ ok: true, emailed: false, email_error: 'Email sending is not set up yet.' });
+    expect(fake.state.links).toHaveLength(1);
   });
 
   it('only allows configured browser origins', async () => {

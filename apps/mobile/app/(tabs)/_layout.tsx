@@ -7,6 +7,7 @@ import { font } from '../../src/ui';
 export default function TabsLayout() {
   const { state } = useAuth();
   if (state.status === 'signed_out') return <Redirect href="/sign-in" />;
+  if (state.status === 'signed_in' && state.session.mustChangePassword) return <Redirect href="/set-password" />;
   return (
     <Tabs
       screenOptions={{
