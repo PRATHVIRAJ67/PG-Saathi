@@ -57,11 +57,14 @@ ${row('Temporary password', input.password)}
 
 /** Sends one email. Returns null when sent, otherwise a short reason. */
 export async function sendEmail(env: Env, fetchImpl: Fetch, msg: { to: string; toName?: string; subject: string; html: string }): Promise<string | null> {
-  if (!env.BREVO_API_KEY) return 'Email sending is not set up yet.';
+  // Pasted keys sometimes carry a stray space or newline.
+  const key = env.BREVO_API_KEY?.trim();
+  if (!key) return 'Email sending is not set up yet.';
+  if (key.startsWith('xsmtpsib-')) return 'The Brevo key is an SMTP key; set BREVO_API_KEY to an API key (xkeysib-…).';
   try {
     const res = await fetchImpl('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
-      headers: { 'api-key': env.BREVO_API_KEY, 'Content-Type': 'application/json', accept: 'application/json' },
+      headers: { 'api-key': key, 'Content-Type': 'application/json', accept: 'application/json' },
       body: JSON.stringify({
         sender: { name: env.EMAIL_FROM_NAME || 'PG Sathi', email: env.EMAIL_FROM },
         to: [{ email: msg.to, ...(msg.toName ? { name: msg.toName } : {}) }],
@@ -72,7 +75,7 @@ export async function sendEmail(env: Env, fetchImpl: Fetch, msg: { to: string; t
     if (res.ok) return null;
     const body = (await res.json().catch(() => ({}))) as { message?: string };
     console.error('brevo send failed', res.status, body.message);
-    return 'The email service rejected the message.';
+    return res.status === 401 ? 'Brevo rejected the API key (check BREVO_API_KEY).' : `The email service rejected the message${body.message ? `: ${body.message}` : '.'}`;
   } catch {
     return 'Could not reach the email service.';
   }
