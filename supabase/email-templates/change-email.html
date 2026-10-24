@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>Confirm your new email</title>
+</head>
+<body style="margin:0;padding:0;background:#F6F7FB;-webkit-font-smoothing:antialiased">
+<span style="display:none!important;visibility:hidden;opacity:0;color:transparent;height:0;width:0;overflow:hidden;mso-hide:all">Confirm the change of email on your PG Sathi account.</span>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F6F7FB">
+  <tr>
+    <td align="center" style="padding:32px 16px">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px">
+        <!-- Brand -->
+        <tr>
+          <td style="padding:0 4px 20px">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td width="40" height="40" align="center" valign="middle" bgcolor="#14213D" style="border-radius:11px;font-size:20px;line-height:40px">&#127968;</td>
+                <td style="padding-left:12px;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-size:19px;font-weight:700;color:#14213D;letter-spacing:-0.2px">PG Sathi</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <!-- Card -->
+        <tr>
+          <td bgcolor="#ffffff" style="border:1px solid #E3E6EE;border-radius:16px;padding:36px 32px;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#182230">
+            <h1 style="margin:0 0 12px;font-size:22px;line-height:30px;font-weight:700;color:#14213D">Confirm your new email</h1>
+            <p style="margin:0 0 12px;font-size:15px;line-height:24px;color:#182230">You asked to change the email on your PG Sathi account from <b>{{ .Email }}</b> to <b>{{ .NewEmail }}</b>. Confirm to finish the change.</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:28px 0 8px">
+  <tr>
+    <td align="center" bgcolor="#14213D" style="border-radius:10px">
+      <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:10px">Confirm new email</a>
+    </td>
+  </tr>
+</table>
+
+<p style="margin:20px 0 0;font-size:13px;line-height:20px;color:#667085">Button not working? Copy this link into your browser:<br>
+<a href="{{ .ConfirmationURL }}" style="color:#5B5CE2;word-break:break-all">{{ .ConfirmationURL }}</a></p>
+          </td>
+        </tr>
+        <!-- Footer -->
+        <tr>
+          <td style="padding:20px 8px 0;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:18px;color:#667085;text-align:center">
+            Didn’t ask for this? Ignore this email and your email stays the same.<br>
+            This email was sent to {{ .Email }} by PG Sathi, PG management for owners in India.
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

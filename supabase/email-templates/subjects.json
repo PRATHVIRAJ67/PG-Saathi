@@ -1,0 +1,6 @@
+{
+  "magic-link.html": "Your PG Sathi sign-in code: {{ .Token }}",
+  "confirm-signup.html": "Confirm your email to start using PG Sathi",
+  "reset-password.html": "Reset your PG Sathi password",
+  "change-email.html": "Confirm your new email for PG Sathi"
+}
